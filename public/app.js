@@ -1,1 +1,1297 @@
-!function(){"use strict";var e="undefined"==typeof window?global:window;if("function"!=typeof e.require){var t={},r={},n={},i={}.hasOwnProperty,a=/^\.\.?(\/|$)/,s=function(e,t){for(var r,n=[],i=(a.test(t)?e+"/"+t:t).split("/"),s=0,o=i.length;o>s;s++)r=i[s],".."===r?n.pop():"."!==r&&""!==r&&n.push(r);return n.join("/")},o=function(e){return e.split("/").slice(0,-1).join("/")},u=function(t){return function(r){var n=s(o(t),r);return e.require(n,t)}},c=function(e,t){var n={id:e,exports:{}};return r[e]=n,t(n.exports,u(e),n),n.exports},l=function(e){return n[e]?l(n[e]):e},d=function(e,n){null==n&&(n="/");var a=l(e);if(i.call(r,a))return r[a].exports;if(i.call(t,a))return c(a,t[a]);throw new Error("Cannot find module '"+e+"' from '"+n+"'")};d.alias=function(e,t){n[t]=e},d.reset=function(){t={},r={},n={}};var f=/\.[^.\/]+$/,h=/\/index(\.[^\/]+)?$/,p=function(e){if(f.test(e)){var t=e.replace(f,"");i.call(n,t)&&n[t].replace(f,"")!==t+"/index"||(n[t]=e)}if(h.test(e)){var r=e.replace(h,"");i.call(n,r)||(n[r]=e)}};d.register=d.define=function(e,n){if("object"==typeof e)for(var a in e)i.call(e,a)&&d.register(a,e[a]);else t[e]=n,delete r[e],p(e)},d.list=function(){var e=[];for(var r in t)i.call(t,r)&&e.push(r);return e},d.brunch=!0,d._cache=r,e.require=d}}(),require.register("actions.js",function(e,t,r){"use strict";Object.defineProperty(e,"__esModule",{value:!0});e.setFontSize=function(e){return{type:"SET_FONT_SIZE",size:e}},e.setContrast=function(e){return{type:"SET_CONTRAST",contrast:e}},e.selectImage=function(e){return{type:"SELECT_IMAGE",image:e}},e.cacheDrawing=function(e){return{type:"CACHE_DRAWING",drawing:e}}}),require.register("components/Card.jsx",function(e,t,r){"use strict";function n(e){return e&&e.__esModule?e:{"default":e}}Object.defineProperty(e,"__esModule",{value:!0});var i=t("react"),a=n(i);e["default"]=function(e){var t=e.title,r=e.children;return a["default"].createElement("div",{className:"Card"},a["default"].createElement("div",{className:"Card-header"},a["default"].createElement("h4",null,t)),r)}}),require.register("components/DownloadButton.jsx",function(e,t,r){"use strict";function n(e){return e&&e.__esModule?e:{"default":e}}Object.defineProperty(e,"__esModule",{value:!0});var i=t("react"),a=n(i);e["default"]=a["default"].createClass({displayName:"DownloadButton",propTypes:{drawing:a["default"].PropTypes.string},handleDownload:function(e){var t=this.props.drawing,r=e.target;r.href=t,r.click()},render:function(){return a["default"].createElement("div",null,a["default"].createElement("a",{className:"Button",download:"pabla.jpg",target:"_blank",onClick:this.handleDownload},"Download"))}})}),require.register("components/FiltersPicker.jsx",function(e,t,r){"use strict";function n(e){return e&&e.__esModule?e:{"default":e}}Object.defineProperty(e,"__esModule",{value:!0});var i=t("react"),a=n(i);e["default"]=a["default"].createClass({displayName:"FiltersPicker",propTypes:{contrast:a["default"].PropTypes.bool.isRequired,onContrastChange:a["default"].PropTypes.func.isRequired},updateContrast:function(){var e=this.refs.contrast.checked;this.props.onContrastChange(e)},render:function(){return a["default"].createElement("div",null,a["default"].createElement("label",null,a["default"].createElement("input",{ref:"contrast",checked:this.props.contrast,type:"checkbox",onChange:this.updateContrast})," Contrast"))}})}),require.register("components/ImageCanvas.jsx",function(e,t,r){"use strict";function n(e){return e&&e.__esModule?e:{"default":e}}function i(e){if(Array.isArray(e)){for(var t=0,r=Array(e.length);t<e.length;t++)r[t]=e[t];return r}return Array.from(e)}Object.defineProperty(e,"__esModule",{value:!0});var a=function(){function e(e,t){var r=[],n=!0,i=!1,a=void 0;try{for(var s,o=e[Symbol.iterator]();!(n=(s=o.next()).done)&&(r.push(s.value),!t||r.length!==t);n=!0);}catch(u){i=!0,a=u}finally{try{!n&&o["return"]&&o["return"]()}finally{if(i)throw a}}return r}return function(t,r){if(Array.isArray(t))return t;if(Symbol.iterator in Object(t))return e(t,r);throw new TypeError("Invalid attempt to destructure non-iterable instance")}}(),s=t("react"),o=n(s),u={8:"backspace",27:"escape",37:"arr_left",39:"arr_right"},c=500,l=c-40-10,d=function(e,t){var r=t.getBoundingClientRect(),n={x:e.clientX-r.left,y:e.clientY-r.top};return n},f=function(e,t){return e.x>=t[0]&&e.x<=t[0]+t[2]&&e.y>=t[1]&&e.y<=t[1]+t[3]},h=function(e){var t=e.getContext("2d");if(window.devicePixelRatio){var r=e.width,n=e.height;e.width=r*window.devicePixelRatio,e.height=n*window.devicePixelRatio,window.c=e,e.style.width=r+"px",e.style.height=n+"px",t.scale(window.devicePixelRatio,window.devicePixelRatio)}},p=function(e,t){e.fillStyle="rgba(45, 45, 45, 0.45)",e.fillRect(0,0,t,t)},m=function(e,t,r){var n=r.naturalWidth,i=r.naturalHeight,a=n>i?i:n,s=i>n?i:n,o=a;e.drawImage(r,(s-a)/2,0,o,o,0,0,t,t)},g=function(e,t,r){var n=r.split(" "),i=[""],a=[[]],s=0;return n.forEach(function(r,n){var o=i.length-1,u=i[o],c=0===u.length?r:u+" "+r;if(e.measureText(c).width<=t||0===u.length){i[o]=c;0===u.length;a[o]=a[o].concat(r.split("").map(function(e,t){return s+1+t}))}else a.push(r.split("").map(function(e,t){return s+1+t})),i.push(r);a[i.length-1].push(s+1+r.length),s=s+1+r.length}),[i,a]},v=function(e,t,r,n,i){e.font=n+"px Georgia",e.fillStyle="white";var s=l,o=g(e,s,i),u=a(o,2),c=u[0],d=(u[1],1.3*n),f=void 0;return c.forEach(function(a,s){var o=t[0]+10,u=t[1]+n+s*d;r&&r.y<=u&&r.y>=u-d&&a.split("").forEach(function(t,n){var s=e.measureText(a.slice(0,n)).width,u=e.measureText(a.slice(0,n+1)).width,c=r.x-o;c>=s&&u>=c&&(f=i.indexOf(a)+n)})}),f},y=function(e,t){return[e[0]-t.x,e[1]-t.y,e[2],e[3]]},w=function(e,t,r){var n=1.3*t;return{x:e[0]+10,y:e[1]+t+r*n}},x=function(e,t,r){var n=l,i=g(e,n,r),s=a(i,2),o=(s[0],s[1]),u=o.find(function(e){return-1!==e.indexOf(t+1)}),c=void 0;if(u){var d=o.indexOf(u),f=u.indexOf(t+1);u.map(function(e){return r[e-1]}).join("");c={lineNo:d,idxInLine:f,line:u}}return c},C=function(e,t,r,n,i){var a=i.lineNo,s=i.idxInLine,o=i.line,u=o.map(function(e){return n[e-1]}).join(""),c=w(t,r,a),l=c.x,d=c.y,f=e.measureText(u.slice(0,s+1)).width;return{x:l+f,y1:d-r+7,y2:d+7}},E=function(e,t){var r=t.x,n=t.y1,i=t.y2;e.strokeStyle="rgba(255, 255, 255, 0.75)",e.lineWidth=1,e.lineCap="round",e.beginPath(),e.moveTo(r,n),e.lineTo(r,i),e.stroke(),e.strokeStyle=null},S=function(e,t,r,n,i,s){var o=r,u=n;if(o>u){var c=[u,o];o=c[0],u=c[1]}var d=x(e,o,s),f=x(e,u,s);if(d&&f){var h=g(e,l,s),p=a(h,2),m=(p[0],p[1]);if(d.lineNo===f.lineNo){var v=m.find(function(e){return-1!==e.indexOf(o+1)}),y=v.map(function(e){return s[e-1]}).join(""),C=w(t,i,d.lineNo),E=C.x,S=C.y,b=e.measureText(y.slice(0,d.idxInLine+1)).width,_=e.measureText(y.slice(d.idxInLine+1,f.idxInLine)).width;return[{x1:E+b,x2:E+b+_,y1:S-i+7,y2:S+7}]}var P=Array.apply(0,Array(f.lineNo-d.lineNo+1)).map(function(e,t){return t+d.lineNo});return P.map(function(r){var n=w(t,i,r),a=n.x,c=n.y,l=void 0,h=void 0;if(r==d.lineNo){var p=m.find(function(e){return-1!==e.indexOf(o+1)}),g=p.map(function(e){return s[e-1]}).join("");l=e.measureText(g.slice(0,d.idxInLine+1)).width,h=e.measureText(g.slice(d.idxInLine+1)).width}else if(r===f.lineNo){var v=m.find(function(e){return-1!==e.indexOf(u+1)}),y=v.map(function(e){return s[e-1]}).join("");l=0,h=e.measureText(y.slice(0,f.idxInLine)).width}else l=0,h=280;return{x1:a+l,x2:a+l+h,y1:c-i+7,y2:c+7}})}},b=function(e,t,r,n,s,o,u){e.font=r+"px Georgia",e.fillStyle="white";var c=l,d=g(e,c,u),f=a(d,2),h=f[0],p=(f[1],1.3*r);h.forEach(function(t,n){var i=w(o,r,n),a=i.x,s=i.y;e.fillText(t,a,s,o[2]-20)});var m=(Math.min(300,Math.max.apply(Math,i(h.map(function(t){return e.measureText(t).width})))),h.length*p);return o[3]=m+10,n&&(e.lineWidth=2,e.strokeStyle=s?"rgba(87, 205, 255, 0.5)":"#0092d1",e.strokeRect(o[0],o[1],o[2],o[3])),o};e["default"]=o["default"].createClass({displayName:"ImageCanvas",componentWillReceiveProps:function(e){this.redraw(e)},getInitialState:function(){return{text:"“Others have seen what is and asked why. I have seen what could be and asked why not. ” - Pablo Picasso"}},componentDidMount:function(){var e=this,t=this.refs.canvas;h(t),document.addEventListener("keypress",this.handleKeyUp),document.addEventListener("keydown",this.handleKeyDown),this.textRect=[20,20,c-40,c-40],this.cursor=0,setTimeout(this.doRedraw,100),setInterval(function(){e.showCursor=!e.showCursor,setTimeout(e.doRedraw,100)},450)},doRedraw:function(){this.redraw(this.props)},redraw:function(e){e||(e=this.props);var t=this.refs.canvas,r=t.getContext("2d"),n=this.mouseHeld,i=this.showCursor,a=this.textRect,s=(this.cursor,this.state),o=s.text,u=s.isFocused,l=s.isEditing,d=(s.mouseDiff,e.contrast),f=e.fontSize,h=[].slice.apply(document.images).find(function(t){return e.image.url===t.src});if(h){var g=c;m(r,g,h),d&&p(r,g),this.textRect=b(r,g,f,u,n,a,o);var v=void 0;if(l&&this.cursor1&&this.cursor2){var y=S(r,a,this.cursor1,this.cursor2,f,o);if(!y)return;v=!0,y.forEach(function(e){var t=e.x1,n=e.x2,i=e.y1,a=e.y2;r.fillStyle="rgba(87, 205, 255, 0.5)",r.fillRect(t,i,n-t,a-i)})}if(l&&i&&!v){var w=x(r,this.cursor,o);if(w){var _=C(r,a,f,o,w);E(r,_)}}this.props.onRedraw&&this.props.onRedraw(this.refs.canvas.toDataURL("image/jpeg"))}},cancelEditing:function(){this.setState({isEditing:!1}),setTimeout(this.doRedraw,50)},moveCursor:function(e,t){if(t=!1,!t||this.cursor1||this.cursor2||(this.cursor1=this.cursor2=this.cursor),t||(this.cursor1=this.cursor2=null),"left"===e)this.cursor=this.cursor-1,t&&(this.cursor2=this.cursor);else{if("right"!==e)return;this.cursor=this.cursor+1,t&&(this.cursor2=this.cursor)}setTimeout(this.doRedraw,50)},insertOrDeleteChar:function(e){var t=this.state.text,r=void 0;if(this.cursor1||this.cursor2){var n=this.cursor1,i=this.cursor2,a=t.slice(0,n+1),s=t.slice(i);e?(r=a+e+s,this.cursor1=null,this.cursor2=null,this.cursor=n+1):(r=a+s,this.cursor1=null,this.cursor2=null,this.cursor=n)}else{var o=this.cursor,u=t.slice(0,o+1),c=t.slice(o+1);e?(r=u+e+c,this.cursor=o+1):(r=u.slice(0,-1)+c,this.cursor=o-1)}this.setState({text:r}),setTimeout(this.doRedraw,50)},selectAll:function(){this.cursor1=1,this.cursor2=this.state.text.length,this.cursor=this.cursor2,setTimeout(this.doRedraw,150)},handleKeyDown:function(e){if(this.state.isEditing){if(65===e.which&&e.metaKey===!0)return e.preventDefault(),this.selectAll();switch(u[e.which]){case"escape":this.cancelEditing();break;case"arr_left":this.moveCursor("left",e.shiftKey);break;case"arr_right":this.moveCursor("right",e.shiftKey)}}},handleKeyUp:function(e){if("Meta"!==e.keyIdentifier&&"Alt"!==e.keyIdentifier&&"Control"!==e.keyIdentifier&&this.state.isEditing)if("backspace"===u[e.which])this.insertOrDeleteChar();else{var t=String.fromCharCode(e.charCode);e.shiftKey||(t=t.toLowerCase()),this.insertOrDeleteChar(t)}},handleMouseDown:function(e){var t=d(e,this.refs.canvas);this.startPos=t;var r=this.textRect,n=f(t,r);n?(this.mouseHeld=!0,this.state.isFocused&&(this.mouseDown=new Date),this.setState({isFocused:!0}),setTimeout(this.doRedraw,100)):(this.setState({isFocused:!1,isEditing:!1}),setTimeout(this.doRedraw,100))},handleMouseMove:function(e){if(this.mouseHeld){var t=d(e,this.refs.canvas),r={x:this.startPos.x-t.x,y:this.startPos.y-t.y};if(this.state.isFocused&&!this.state.isEditing)this.textRect=y(this.textRect,r),this.setState({mouseDiff:r}),this.startPos=t;else if(this.state.isFocused&&this.state.isEditing){var n=this.startPos,i=t,a=this.refs.canvas,s=a.getContext("2d"),o=this.textRect,u=this.state.text,c=this.props.fontSize,l=v(s,o,n,c,u),f=v(s,o,i,c,u);this.cursor1=l,this.cursor2=f}setTimeout(this.doRedraw,50)}},handleMouseUp:function(e){if(this.mouseDown&&new Date-this.mouseDown<200){var t=this.refs.canvas,r=t.getContext("2d"),n=(this.textRect,this.state.text),i=this.props.fontSize;this.cursor=v(r,this.textRect,this.startPos,i,n)||this.cursor,this.setState({isEditing:!0}),this.cursor1=null,this.cursor2=null,setTimeout(this.doRedraw,50)}this.setState({mouseDiff:null}),this.mouseDown=null,this.mouseHeld=!1,setTimeout(this.doRedraw,50)},render:function(){this.props.image||{};return o["default"].createElement("div",{className:"ImageCanvas"},o["default"].createElement("canvas",{ref:"canvas",width:c,height:c,onMouseDown:this.handleMouseDown,onMouseMove:this.handleMouseMove,onMouseUp:this.handleMouseUp}))}})}),require.register("components/ImagePicker.jsx",function(e,t,r){"use strict";function n(e){return e&&e.__esModule?e:{"default":e}}Object.defineProperty(e,"__esModule",{value:!0});var i=t("react"),a=n(i);e["default"]=a["default"].createClass({displayName:"ImagePicker",propTypes:{images:a["default"].PropTypes.arrayOf(a["default"].PropTypes.shape({url:a["default"].PropTypes.string})).isRequired,selected:a["default"].PropTypes.shape({url:a["default"].PropTypes.string}),onSelect:a["default"].PropTypes.func},handleSelect:function(e){this.props.onSelect&&this.props.onSelect(e)},render:function(){var e=this,t=this.props.selected||{};return a["default"].createElement("div",{className:"ImagePicker"},this.props.images.map(function(r){var n=r.url===t.url,i="ImagePicker-image"+(n?" ImagePicker-image--selected":"");return a["default"].createElement("div",{className:i,onClick:function(){return e.handleSelect(r)},key:r.url},a["default"].createElement("div",{className:"ImagePicker-wrapper"},a["default"].createElement("img",{src:r.url,crossOrigin:"anonymous"})))}))}})}),require.register("components/SizePicker.jsx",function(e,t,r){"use strict";function n(e){return e&&e.__esModule?e:{"default":e}}Object.defineProperty(e,"__esModule",{value:!0});var i=t("react"),a=n(i);e["default"]=a["default"].createClass({displayName:"SizePicker",render:function(){return a["default"].createElement("span",null,"To be implemented.")}})}),require.register("components/TextPropertiesPicker.jsx",function(e,t,r){"use strict";function n(e){return e&&e.__esModule?e:{"default":e}}Object.defineProperty(e,"__esModule",{value:!0});var i=t("react"),a=n(i);e["default"]=a["default"].createClass({displayName:"TextPropertiesPicker",propTypes:{fontSize:a["default"].PropTypes.number.isRequired,onFontSizeChange:a["default"].PropTypes.func.isRequired},updateFontSize:function(){var e=parseInt(this.refs.fontSize.value,10);this.props.onFontSizeChange(e)},render:function(){return a["default"].createElement("div",null,"Font size:",a["default"].createElement("select",{ref:"fontSize",value:this.props.fontSize,onChange:this.updateFontSize},[8,10,12,14,16,18,20,22,26,32,36,42,48,54].map(function(e){return a["default"].createElement("option",{key:e,value:e},e)})))}})}),require.register("container/App.jsx",function(e,t,r){"use strict";function n(e){return e&&e.__esModule?e:{"default":e}}Object.defineProperty(e,"__esModule",{value:!0});var i=t("react"),a=n(i),s=t("react-redux"),o=t("actions"),u=t("./LeftSidebar"),c=n(u),l=t("./RightSidebar"),d=n(l),f=t("components/ImageCanvas"),h=n(f),p=a["default"].createClass({displayName:"App",updateDrawnImage:function(e){this.props.drawing!==e&&this.props.onCacheDrawing(e)},render:function(){return a["default"].createElement("div",{className:"Container"},a["default"].createElement(c["default"],null),a["default"].createElement("div",{className:"Main"},a["default"].createElement("h4",{className:"Main-subtitle"},"Canvas"),a["default"].createElement(h["default"],{image:this.props.selected,fontSize:this.props.fontSize,contrast:this.props.contrast,onRedraw:this.updateDrawnImage})),a["default"].createElement(d["default"],null))}}),m=function(e){return{fontSize:e.fontSize,contrast:e.contrast,selected:e.selectedImage,drawing:e.drawing}},g=function(e){return{onCacheDrawing:function(t){e((0,o.cacheDrawing)(t))}}};e["default"]=(0,s.connect)(m,g)(p)}),require.register("container/LeftSidebar.jsx",function(e,t,r){"use strict";function n(e){return e&&e.__esModule?e:{"default":e}}Object.defineProperty(e,"__esModule",{value:!0});var i=t("react"),a=n(i),s=t("react-redux"),o=t("actions"),u=t("components/Card"),c=n(u),l=t("components/ImagePicker"),d=n(l),f=function(e){var t=e.availableImages,r=e.selectedImage,n=e.onSelectImage;return a["default"].createElement("div",{className:"Sidebar"},a["default"].createElement(c["default"],{title:"Images"},a["default"].createElement(d["default"],{images:t,selected:r,onSelect:n})))},h=function(e){return{availableImages:e.availableImages,selectedImage:e.selectedImage}},p=function(e){return{onSelectImage:function(t){e((0,o.selectImage)(t))}}};e["default"]=(0,s.connect)(h,p)(f)}),require.register("container/RightSidebar.jsx",function(e,t,r){"use strict";function n(e){return e&&e.__esModule?e:{"default":e}}Object.defineProperty(e,"__esModule",{value:!0});var i=t("react"),a=n(i),s=t("react-redux"),o=t("actions"),u=t("components/Card"),c=n(u),l=t("components/FiltersPicker"),d=n(l),f=t("components/TextPropertiesPicker"),h=n(f),p=t("components/SizePicker"),m=n(p),g=t("components/DownloadButton"),v=n(g),y=function(e){var t=e.drawing,r=e.contrast,n=e.onContrastChange,i=e.fontSize,s=e.onFontSizeChange;return a["default"].createElement("div",{className:"Sidebar"},a["default"].createElement(c["default"],{title:"Sizes"},a["default"].createElement(m["default"],null)),a["default"].createElement(c["default"],{title:"Filters"},a["default"].createElement(d["default"],{contrast:r,onContrastChange:n})),a["default"].createElement(c["default"],{title:"Text"},a["default"].createElement(h["default"],{fontSize:i,onFontSizeChange:s})),a["default"].createElement(v["default"],{drawing:t}),a["default"].createElement("p",{className:"Credit"},"Made by ",a["default"].createElement("a",{href:"http://goshakkk.name"},"Gosha Arinich"),". ",a["default"].createElement("a",{href:"https://github.com/goshakkk/pabla"},"Repo"),"."))},w=function(e){return{fontSize:e.fontSize,contrast:e.contrast}},x=function(e){return{onFontSizeChange:function(t){e((0,o.setFontSize)(t))},onContrastChange:function(t){e((0,o.setContrast)(t))}}};e["default"]=(0,s.connect)(w,x)(y)}),require.register("initialize.js",function(e,t,r){"use strict";function n(e){return e&&e.__esModule?e:{"default":e}}var i=t("react-dom"),a=n(i),s=t("react"),o=n(s),u=t("redux"),c=t("react-redux"),l=t("reducer"),d=n(l),f=t("container/App"),h=n(f),p=(0,u.createStore)(d["default"]);document.addEventListener("DOMContentLoaded",function(){a["default"].render(o["default"].createElement(c.Provider,{store:p},o["default"].createElement(h["default"],null)),document.querySelector("#app"))})}),require.register("reducer.js",function(e,t,r){"use strict";Object.defineProperty(e,"__esModule",{value:!0}),e["default"]=function(){var e=arguments.length<=0||void 0===arguments[0]?i:arguments[0],t=arguments[1];switch(t.type){case"SET_FONT_SIZE":return Object.assign({},e,{fontSize:t.size});case"SET_CONTRAST":return Object.assign({},e,{contrast:t.contrast});case"SELECT_IMAGE":return Object.assign({},e,{selectedImage:t.image});case"CACHE_DRAWING":return Object.assign({},e,{drawing:t.drawing});default:return e}};var n=[{url:"https://images.unsplash.com/photo-1458640904116-093b74971de9?fm=jpg"},{url:"https://images.unsplash.com/photo-1453227588063-bb302b62f50b?fm=jpg"},{url:"https://images.unsplash.com/photo-1451906278231-17b8ff0a8880?fm=jpg"},{url:"https://images.unsplash.com/photo-1447969025943-8219c41ea47a?fm=jpg"},{url:"https://images.unsplash.com/photo-1421749810611-438cc492b581?fm=jpg"},{url:"https://images.unsplash.com/photo-1449960238630-7e720e630019?fm=jpg"},{url:"https://images.unsplash.com/photo-1433190152045-5a94184895da?fm=jpg"}],i={fontSize:32,contrast:!0,availableImages:n,selectedImage:n[0],drawing:null}});
+(function() {
+  'use strict';
+
+  var globals = typeof window === 'undefined' ? global : window;
+  if (typeof globals.require === 'function') return;
+
+  var modules = {};
+  var cache = {};
+  var aliases = {};
+  var has = ({}).hasOwnProperty;
+
+  var expRe = /^\.\.?(\/|$)/;
+  var expand = function(root, name) {
+    var results = [], part;
+    var parts = (expRe.test(name) ? root + '/' + name : name).split('/');
+    for (var i = 0, length = parts.length; i < length; i++) {
+      part = parts[i];
+      if (part === '..') {
+        results.pop();
+      } else if (part !== '.' && part !== '') {
+        results.push(part);
+      }
+    }
+    return results.join('/');
+  };
+
+  var dirname = function(path) {
+    return path.split('/').slice(0, -1).join('/');
+  };
+
+  var localRequire = function(path) {
+    return function expanded(name) {
+      var absolute = expand(dirname(path), name);
+      return globals.require(absolute, path);
+    };
+  };
+
+  var initModule = function(name, definition) {
+    var module = {id: name, exports: {}};
+    cache[name] = module;
+    definition(module.exports, localRequire(name), module);
+    return module.exports;
+  };
+
+  var expandAlias = function(name) {
+    return aliases[name] ? expandAlias(aliases[name]) : name;
+  };
+
+  var require = function(name, loaderPath) {
+    if (loaderPath == null) loaderPath = '/';
+    var path = expandAlias(name);
+
+    if (has.call(cache, path)) return cache[path].exports;
+    if (has.call(modules, path)) return initModule(path, modules[path]);
+
+    throw new Error("Cannot find module '" + name + "' from '" + loaderPath + "'");
+  };
+
+  require.alias = function(from, to) {
+    aliases[to] = from;
+  };
+
+  require.reset = function() {
+    modules = {};
+    cache = {};
+    aliases = {};
+  };
+
+  var extRe = /\.[^.\/]+$/;
+  var indexRe = /\/index(\.[^\/]+)?$/;
+  var addExtensions = function(bundle) {
+    if (extRe.test(bundle)) {
+      var alias = bundle.replace(extRe, '');
+      if (!has.call(aliases, alias) || aliases[alias].replace(extRe, '') === alias + '/index') {
+        aliases[alias] = bundle;
+      }
+    }
+
+    if (indexRe.test(bundle)) {
+      var iAlias = bundle.replace(indexRe, '');
+      if (!has.call(aliases, iAlias)) {
+        aliases[iAlias] = bundle;
+      }
+    }
+  };
+
+  require.register = require.define = function(bundle, fn) {
+    if (typeof bundle === 'object') {
+      for (var key in bundle) {
+        if (has.call(bundle, key)) {
+          require.register(key, bundle[key]);
+        }
+      }
+    } else {
+      modules[bundle] = fn;
+      delete cache[bundle];
+      addExtensions(bundle);
+    }
+  };
+
+  require.list = function() {
+    var result = [];
+    for (var item in modules) {
+      if (has.call(modules, item)) {
+        result.push(item);
+      }
+    }
+    return result;
+  };
+
+  require.brunch = true;
+  require._cache = cache;
+  globals.require = require;
+})();
+require.register("actions.js", function(exports, require, module) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+var setFontSize = exports.setFontSize = function setFontSize(size) {
+  return {
+    type: 'SET_FONT_SIZE',
+    size: size
+  };
+};
+
+var setContrast = exports.setContrast = function setContrast(contrast) {
+  return {
+    type: 'SET_CONTRAST',
+    contrast: contrast
+  };
+};
+
+var selectImage = exports.selectImage = function selectImage(image) {
+  return {
+    type: 'SELECT_IMAGE',
+    image: image
+  };
+};
+
+var cacheDrawing = exports.cacheDrawing = function cacheDrawing(drawing) {
+  return {
+    type: 'CACHE_DRAWING',
+    drawing: drawing
+  };
+};
+});
+
+require.register("components/Card.jsx", function(exports, require, module) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _react = require("react");
+
+var _react2 = _interopRequireDefault(_react);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = function (_ref) {
+  var title = _ref.title;
+  var children = _ref.children;
+
+  return _react2.default.createElement(
+    "div",
+    { className: "Card" },
+    _react2.default.createElement(
+      "div",
+      { className: "Card-header" },
+      _react2.default.createElement(
+        "h4",
+        null,
+        title
+      )
+    ),
+    children
+  );
+};
+});
+
+require.register("components/DownloadButton.jsx", function(exports, require, module) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _react = require("react");
+
+var _react2 = _interopRequireDefault(_react);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = _react2.default.createClass({
+  displayName: "DownloadButton",
+
+  propTypes: {
+    drawing: _react2.default.PropTypes.string
+  },
+
+  handleDownload: function handleDownload(e) {
+    var uri = this.props.drawing;
+    var link = e.target;
+    link.href = uri;
+    link.click();
+  },
+  render: function render() {
+    return _react2.default.createElement(
+      "div",
+      null,
+      _react2.default.createElement(
+        "a",
+        { className: "Button", download: "pabla.jpg", target: "_blank", onClick: this.handleDownload },
+        "Download"
+      )
+    );
+  }
+});
+});
+
+require.register("components/FiltersPicker.jsx", function(exports, require, module) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _react = require("react");
+
+var _react2 = _interopRequireDefault(_react);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = _react2.default.createClass({
+  displayName: "FiltersPicker",
+
+  propTypes: {
+    contrast: _react2.default.PropTypes.bool.isRequired,
+    onContrastChange: _react2.default.PropTypes.func.isRequired
+  },
+
+  updateContrast: function updateContrast() {
+    var val = this.refs.contrast.checked;
+    this.props.onContrastChange(val);
+  },
+  render: function render() {
+    return _react2.default.createElement(
+      "div",
+      null,
+      _react2.default.createElement(
+        "label",
+        null,
+        _react2.default.createElement("input", { ref: "contrast", checked: this.props.contrast, type: "checkbox", onChange: this.updateContrast }),
+        " Contrast"
+      )
+    );
+  }
+});
+});
+
+require.register("components/ImageCanvas.jsx", function(exports, require, module) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
+var keys = {
+  8: 'backspace',
+  27: 'escape',
+  37: 'arr_left',
+  39: 'arr_right'
+};
+
+var CANVAS_SIZE = 500;
+var MAX_TEXT_WIDTH = CANVAS_SIZE - 40 - 10;
+
+var getMousePos = function getMousePos(e, canvas) {
+  var rect = canvas.getBoundingClientRect();
+  var mousePos = {
+    x: e.clientX - rect.left,
+    y: e.clientY - rect.top
+  };
+  return mousePos;
+};
+
+var isInRect = function isInRect(pos, rect) {
+  return pos.x >= rect[0] && pos.x <= rect[0] + rect[2] && pos.y >= rect[1] && pos.y <= rect[1] + rect[3];
+};
+
+var initCanvas = function initCanvas(c) {
+  // handle retina w
+  // https://gist.github.com/joubertnel/870190
+  var ctx = c.getContext('2d');
+
+  if (window.devicePixelRatio) {
+    var width = c.width;
+    var height = c.height;
+    c.width = width * window.devicePixelRatio;
+    c.height = height * window.devicePixelRatio;
+    window.c = c;
+    c.style.width = width + 'px';
+    c.style.height = height + 'px';
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+  }
+};
+
+var applyContrast = function applyContrast(ctx, canvasDim) {
+  ctx.fillStyle = "rgba(45, 45, 45, 0.45)";
+  ctx.fillRect(0, 0, canvasDim, canvasDim);
+};
+
+var drawImage = function drawImage(ctx, canvasDim, img) {
+  var imgWidth = img.naturalWidth;
+  var imgHeight = img.naturalHeight;
+  var imgMin = imgWidth > imgHeight ? imgHeight : imgWidth;
+  var imgMax = imgWidth < imgHeight ? imgHeight : imgWidth;
+  var imageSlice = imgMin;
+  ctx.drawImage(img, (imgMax - imgMin) / 2, 0, imageSlice, imageSlice, 0, 0, canvasDim, canvasDim);
+};
+
+var splitTextInLines = function splitTextInLines(ctx, maxWidth, text) {
+  var words = text.split(' ');
+  var lines = [''];
+  var indices = [[]];
+
+  var lastGlobIdx = 0;
+  words.forEach(function (word, idx) {
+    var lastIdx = lines.length - 1;
+    var lastLine = lines[lastIdx];
+    var newText = lastLine.length === 0 ? word : lastLine + ' ' + word;
+    if (ctx.measureText(newText).width <= maxWidth || lastLine.length === 0) {
+      lines[lastIdx] = newText;
+      var empty = lastLine.length === 0;
+      indices[lastIdx] = indices[lastIdx].concat(word.split('').map(function (_, i) {
+        return lastGlobIdx + 1 + i;
+      }));
+    } else {
+      indices.push(word.split('').map(function (_, i) {
+        return lastGlobIdx + 1 + i;
+      }));
+      lines.push(word);
+    }
+    indices[lines.length - 1].push(lastGlobIdx + 1 + word.length);
+    lastGlobIdx = lastGlobIdx + 1 + word.length;
+  });
+
+  return [lines, indices];
+};
+
+var findIdxForCursor = function findIdxForCursor(ctx, textRect, cursorAt, fontSize, text) {
+  ctx.font = fontSize + 'px Georgia';
+  ctx.fillStyle = "white";
+  var maxWidth = MAX_TEXT_WIDTH;
+
+  var _splitTextInLines = splitTextInLines(ctx, maxWidth, text);
+
+  var _splitTextInLines2 = _slicedToArray(_splitTextInLines, 2);
+
+  var lines = _splitTextInLines2[0];
+  var mapIndices = _splitTextInLines2[1];
+
+  var spaced = fontSize * 1.3;
+  var cursor = void 0;
+  lines.forEach(function (line, idx) {
+    var x = textRect[0] + 10;
+    var y = textRect[1] + fontSize + idx * spaced;
+    // find cursor
+    if (cursorAt && cursorAt.y <= y && cursorAt.y >= y - spaced) {
+      line.split('').forEach(function (char, idx) {
+        var wd0 = ctx.measureText(line.slice(0, idx)).width;
+        var wd1 = ctx.measureText(line.slice(0, idx + 1)).width;
+        var curX = cursorAt.x - x;
+        if (curX >= wd0 && curX <= wd1) {
+          cursor = text.indexOf(line) + idx;
+        }
+      });
+    }
+  });
+  return cursor;
+};
+
+var applyMouseDiff = function applyMouseDiff(textRect, mouseDiff) {
+  return [textRect[0] - mouseDiff.x, textRect[1] - mouseDiff.y, textRect[2], textRect[3]];
+};
+
+var coordsForLine = function coordsForLine(textRect, fontSize, lineNo) {
+  var spaced = fontSize * 1.3;
+  return { x: textRect[0] + 10, y: textRect[1] + fontSize + lineNo * spaced };
+};
+
+var findPosForCursor = function findPosForCursor(ctx, cursor, text) {
+  var maxWidth = MAX_TEXT_WIDTH;
+
+  var _splitTextInLines3 = splitTextInLines(ctx, maxWidth, text);
+
+  var _splitTextInLines4 = _slicedToArray(_splitTextInLines3, 2);
+
+  var lines = _splitTextInLines4[0];
+  var mapIndices = _splitTextInLines4[1];
+
+
+  var line = mapIndices.find(function (line) {
+    return line.indexOf(cursor + 1) !== -1;
+  });
+  var pos = void 0;
+  if (line) {
+    var lineNo = mapIndices.indexOf(line);
+    var idxInLine = line.indexOf(cursor + 1);
+    var lineText = line.map(function (i) {
+      return text[i - 1];
+    }).join('');
+
+    pos = { lineNo: lineNo, idxInLine: idxInLine, line: line };
+  }
+  return pos;
+};
+
+var findCoordsForPos = function findCoordsForPos(ctx, textRect, fontSize, text, pos) {
+  var lineNo = pos.lineNo;
+  var idxInLine = pos.idxInLine;
+  var line = pos.line;
+
+  var lineText = line.map(function (i) {
+    return text[i - 1];
+  }).join('');
+
+  var _coordsForLine = coordsForLine(textRect, fontSize, lineNo);
+
+  var x = _coordsForLine.x;
+  var y = _coordsForLine.y;
+
+  var wd1 = ctx.measureText(lineText.slice(0, idxInLine + 1)).width;
+
+  return { x: x + wd1, y1: y - fontSize + 7, y2: y + 7 };
+};
+
+var drawCursor = function drawCursor(ctx, coords) {
+  var x = coords.x;
+  var y1 = coords.y1;
+  var y2 = coords.y2;
+
+
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.75)";
+  ctx.lineWidth = 1;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(x, y1);
+  ctx.lineTo(x, y2);
+  ctx.stroke();
+  ctx.strokeStyle = null;
+};
+
+var findRectsForSelection = function findRectsForSelection(ctx, textRect, cursor1, cursor2, fontSize, text) {
+  var idx1 = cursor1;
+  var idx2 = cursor2;
+  if (idx1 > idx2) {
+    var _ref = [idx2, idx1];
+    idx1 = _ref[0];
+    idx2 = _ref[1];
+  }
+  var pos1 = findPosForCursor(ctx, idx1, text);
+  var pos2 = findPosForCursor(ctx, idx2, text);
+
+  if (!(pos1 && pos2)) return;
+
+  var _splitTextInLines5 = splitTextInLines(ctx, MAX_TEXT_WIDTH, text);
+
+  var _splitTextInLines6 = _slicedToArray(_splitTextInLines5, 2);
+
+  var lines = _splitTextInLines6[0];
+  var mapIndices = _splitTextInLines6[1];
+
+
+  if (pos1.lineNo === pos2.lineNo) {
+    var line = mapIndices.find(function (line) {
+      return line.indexOf(idx1 + 1) !== -1;
+    });
+    var lineText = line.map(function (i) {
+      return text[i - 1];
+    }).join('');
+
+    var _coordsForLine2 = coordsForLine(textRect, fontSize, pos1.lineNo);
+
+    var x = _coordsForLine2.x;
+    var y = _coordsForLine2.y;
+
+    var wd1 = ctx.measureText(lineText.slice(0, pos1.idxInLine + 1)).width;
+    var wd2 = ctx.measureText(lineText.slice(pos1.idxInLine + 1, pos2.idxInLine)).width;
+
+    return [{ x1: x + wd1, x2: x + wd1 + wd2, y1: y - fontSize + 7, y2: y + 7 }];
+  } else {
+    var lineNos = Array.apply(0, Array(pos2.lineNo - pos1.lineNo + 1)).map(function (_, idx) {
+      return idx + pos1.lineNo;
+    });
+
+    return lineNos.map(function (lineNo) {
+      var _coordsForLine3 = coordsForLine(textRect, fontSize, lineNo);
+
+      var x = _coordsForLine3.x;
+      var y = _coordsForLine3.y;
+
+
+      var wd1 = void 0,
+          wd2 = void 0;
+      if (lineNo == pos1.lineNo) {
+        var _line = mapIndices.find(function (line) {
+          return line.indexOf(idx1 + 1) !== -1;
+        });
+        var _lineText = _line.map(function (i) {
+          return text[i - 1];
+        }).join('');
+        wd1 = ctx.measureText(_lineText.slice(0, pos1.idxInLine + 1)).width;
+        wd2 = ctx.measureText(_lineText.slice(pos1.idxInLine + 1)).width;
+      } else if (lineNo === pos2.lineNo) {
+        var _line2 = mapIndices.find(function (line) {
+          return line.indexOf(idx2 + 1) !== -1;
+        });
+        var _lineText2 = _line2.map(function (i) {
+          return text[i - 1];
+        }).join('');
+        wd1 = 0;
+        wd2 = ctx.measureText(_lineText2.slice(0, pos2.idxInLine)).width;
+      } else {
+        wd1 = 0;
+        wd2 = 280;
+      }
+      return { x1: x + wd1, x2: x + wd1 + wd2, y1: y - fontSize + 7, y2: y + 7 };
+    });
+  }
+};
+
+var addText = function addText(ctx, canvasDim, fontSize, isFocused, mouseHeld, textRect, text) {
+  ctx.font = fontSize + 'px Georgia';
+  ctx.fillStyle = "white";
+  var maxWidth = MAX_TEXT_WIDTH;
+
+  var _splitTextInLines7 = splitTextInLines(ctx, maxWidth, text);
+
+  var _splitTextInLines8 = _slicedToArray(_splitTextInLines7, 2);
+
+  var lines = _splitTextInLines8[0];
+  var mapIndices = _splitTextInLines8[1];
+
+  //const corners = (canvasDim-maxActual)/2 - 10;
+  //if (!textRect) textRect = [corners, 100-fontSize, maxActual+20, totalHeight+10];
+
+  var spaced = fontSize * 1.3;
+  lines.forEach(function (line, idx) {
+    var _coordsForLine4 = coordsForLine(textRect, fontSize, idx);
+
+    var x = _coordsForLine4.x;
+    var y = _coordsForLine4.y;
+
+    ctx.fillText(line, x, y, textRect[2] - 20);
+  });
+
+  var maxActual = Math.min(300, Math.max.apply(Math, _toConsumableArray(lines.map(function (line) {
+    return ctx.measureText(line).width;
+  }))));
+  var totalHeight = lines.length * spaced;
+
+  textRect[3] = totalHeight + 10;
+
+  if (isFocused) {
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = !mouseHeld ? "#0092d1" : "rgba(87, 205, 255, 0.5)";
+    ctx.strokeRect(textRect[0], textRect[1], textRect[2], textRect[3]);
+  }
+  return textRect;
+};
+
+// TODO:
+// wait for image loading
+exports.default = _react2.default.createClass({
+  displayName: 'ImageCanvas',
+  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+    this.redraw(nextProps);
+  },
+  getInitialState: function getInitialState() {
+    return { text: '“Others have seen what is and asked why. I have seen what could be and asked why not. ” - Pablo Picasso' };
+  },
+  componentDidMount: function componentDidMount() {
+    var _this = this;
+
+    var c = this.refs.canvas;
+    initCanvas(c);
+    document.addEventListener('keypress', this.handleKeyUp);
+    document.addEventListener('keydown', this.handleKeyDown);
+    this.textRect = [20, 20, CANVAS_SIZE - 40, CANVAS_SIZE - 40];
+    this.cursor = 0;
+    setTimeout(this.doRedraw, 100);
+
+    setInterval(function () {
+      _this.showCursor = !_this.showCursor;
+      setTimeout(_this.doRedraw, 100);
+    }, 450);
+  },
+  doRedraw: function doRedraw() {
+    this.redraw(this.props);
+  },
+  redraw: function redraw(nextProps) {
+    if (!nextProps) nextProps = this.props;
+
+    var canvas = this.refs.canvas;
+    var ctx = canvas.getContext('2d');
+
+    var mouseHeld = this.mouseHeld;
+    var showCursor = this.showCursor;
+    var textRect = this.textRect;
+    var cursor = this.cursor;
+    var _state = this.state;
+    var text = _state.text;
+    var isFocused = _state.isFocused;
+    var isEditing = _state.isEditing;
+    var mouseDiff = _state.mouseDiff;
+
+
+    var hasContrast = nextProps.contrast;
+    var fontSize = nextProps.fontSize;
+
+    var img = [].slice.apply(document.images).find(function (i) {
+      return nextProps.image.url === i.src;
+    });
+    if (!img) return;
+    var canvasDim = CANVAS_SIZE;
+
+    drawImage(ctx, canvasDim, img);
+    if (hasContrast) applyContrast(ctx, canvasDim);
+    this.textRect = addText(ctx, canvasDim, fontSize, isFocused, mouseHeld, textRect, text);
+    var setCursor = void 0;
+    if (isEditing && this.cursor1 && this.cursor2) {
+      var rects = findRectsForSelection(ctx, textRect, this.cursor1, this.cursor2, fontSize, text);
+      if (!rects) return;
+
+      setCursor = true;
+      rects.forEach(function (rect) {
+        var x1 = rect.x1;
+        var x2 = rect.x2;
+        var y1 = rect.y1;
+        var y2 = rect.y2;
+
+        ctx.fillStyle = "rgba(87, 205, 255, 0.5)";
+        ctx.fillRect(x1, y1, x2 - x1, y2 - y1);
+      });
+    }
+    if (isEditing && showCursor && !setCursor) {
+      var pos = findPosForCursor(ctx, this.cursor, text);
+      if (pos) {
+        var coords = findCoordsForPos(ctx, textRect, fontSize, text, pos);
+        drawCursor(ctx, coords);
+      }
+    }
+
+    this.props.onRedraw && this.props.onRedraw(this.refs.canvas.toDataURL('image/jpeg'));
+  },
+  cancelEditing: function cancelEditing() {
+    this.setState({ isEditing: false });
+    setTimeout(this.doRedraw, 50);
+  },
+  moveCursor: function moveCursor(dir, shift) {
+    // TODO: implement shift-selection
+    shift = false;
+
+    if (shift && !this.cursor1 && !this.cursor2) {
+      this.cursor1 = this.cursor2 = this.cursor;
+    }
+
+    if (!shift) {
+      this.cursor1 = this.cursor2 = null;
+    }
+
+    if (dir === 'left') {
+      this.cursor = this.cursor - 1;
+      if (shift) {
+        this.cursor2 = this.cursor;
+      }
+    } else if (dir === 'right') {
+      this.cursor = this.cursor + 1;
+      if (shift) {
+        this.cursor2 = this.cursor;
+      }
+    } else {
+      return;
+    }
+
+    setTimeout(this.doRedraw, 50);
+  },
+  insertOrDeleteChar: function insertOrDeleteChar(char) {
+    var currText = this.state.text;
+    var newText = void 0;
+    if (!this.cursor1 && !this.cursor2) {
+      var globalCurrIdx = this.cursor;
+      var beforeCurr = currText.slice(0, globalCurrIdx + 1);
+      var afterCurr = currText.slice(globalCurrIdx + 1);
+      if (!char) {
+        newText = beforeCurr.slice(0, -1) + afterCurr;
+        this.cursor = globalCurrIdx - 1;
+      } else {
+        newText = beforeCurr + char + afterCurr;
+        this.cursor = globalCurrIdx + 1;
+      }
+    } else {
+      var idx1 = this.cursor1;
+      var idx2 = this.cursor2;
+
+      var _beforeCurr = currText.slice(0, idx1 + 1);
+      var _afterCurr = currText.slice(idx2);
+      if (!char) {
+        newText = _beforeCurr + _afterCurr;
+        this.cursor1 = null;
+        this.cursor2 = null;
+        this.cursor = idx1;
+      } else {
+        newText = _beforeCurr + char + _afterCurr;
+        this.cursor1 = null;
+        this.cursor2 = null;
+        this.cursor = idx1 + 1;
+      }
+    }
+
+    this.setState({ text: newText });
+    setTimeout(this.doRedraw, 50);
+  },
+  selectAll: function selectAll() {
+    // doesn't quite select the first char
+    this.cursor1 = 1;
+    this.cursor2 = this.state.text.length;
+    this.cursor = this.cursor2;
+    setTimeout(this.doRedraw, 150);
+  },
+  handleKeyDown: function handleKeyDown(e) {
+    if (this.state.isEditing) {
+      if (e.which === 65 && e.metaKey === true) {
+        e.preventDefault();
+        return this.selectAll();
+      }
+      switch (keys[e.which]) {
+        case 'escape':
+          this.cancelEditing();
+          break;
+        case 'arr_left':
+          this.moveCursor('left', e.shiftKey);
+          break;
+        case 'arr_right':
+          this.moveCursor('right', e.shiftKey);
+          break;
+      }
+    }
+  },
+  handleKeyUp: function handleKeyUp(e) {
+    if (e.keyIdentifier === 'Meta' || e.keyIdentifier === 'Alt' || e.keyIdentifier === 'Control') return;
+
+    if (this.state.isEditing) {
+      if (keys[e.which] === 'backspace') {
+        this.insertOrDeleteChar();
+      } else {
+        var char = String.fromCharCode(e.charCode);
+        if (!e.shiftKey) char = char.toLowerCase();
+        this.insertOrDeleteChar(char);
+      }
+    }
+  },
+  handleMouseDown: function handleMouseDown(e) {
+    var mousePos = getMousePos(e, this.refs.canvas);
+    this.startPos = mousePos;
+
+    var textRect = this.textRect;
+    var isInTextRect = isInRect(mousePos, textRect);
+
+    if (isInTextRect) {
+      this.mouseHeld = true;
+      if (this.state.isFocused) {
+        this.mouseDown = new Date();
+      }
+      this.setState({ isFocused: true });
+      setTimeout(this.doRedraw, 100);
+    } else {
+      this.setState({ isFocused: false, isEditing: false });
+      setTimeout(this.doRedraw, 100);
+    }
+  },
+  handleMouseMove: function handleMouseMove(e) {
+    if (this.mouseHeld) {
+      // move
+
+      var mousePos = getMousePos(e, this.refs.canvas);
+
+      var mouseDiff = {
+        x: this.startPos.x - mousePos.x,
+        y: this.startPos.y - mousePos.y
+      };
+
+      if (this.state.isFocused && !this.state.isEditing) {
+        this.textRect = applyMouseDiff(this.textRect, mouseDiff);
+        this.setState({ mouseDiff: mouseDiff });
+        this.startPos = mousePos;
+      } else if (this.state.isFocused && this.state.isEditing) {
+        var cursor1 = this.startPos;
+        var cursor2 = mousePos;
+
+        var canvas = this.refs.canvas;
+        var ctx = canvas.getContext('2d');
+        var textRect = this.textRect;
+        var text = this.state.text;
+
+        var fontSize = this.props.fontSize;
+        var idx1 = findIdxForCursor(ctx, textRect, cursor1, fontSize, text);
+        var idx2 = findIdxForCursor(ctx, textRect, cursor2, fontSize, text);
+        this.cursor1 = idx1;
+        this.cursor2 = idx2;
+      }
+
+      setTimeout(this.doRedraw, 50);
+    }
+  },
+  handleMouseUp: function handleMouseUp(e) {
+    if (this.mouseDown) {
+      if (new Date() - this.mouseDown < 200) {
+        var canvas = this.refs.canvas;
+        var ctx = canvas.getContext('2d');
+        var textRect = this.textRect;
+        var text = this.state.text;
+
+        var fontSize = this.props.fontSize;
+        this.cursor = findIdxForCursor(ctx, this.textRect, this.startPos, fontSize, text) || this.cursor;
+        this.setState({ isEditing: true });
+        this.cursor1 = null;
+        this.cursor2 = null;
+
+        setTimeout(this.doRedraw, 50);
+      }
+    }
+    this.setState({ mouseDiff: null });
+    this.mouseDown = null;
+    this.mouseHeld = false;
+    setTimeout(this.doRedraw, 50);
+  },
+  render: function render() {
+    var image = this.props.image || {};
+    return _react2.default.createElement(
+      'div',
+      { className: 'ImageCanvas' },
+      _react2.default.createElement('canvas', { ref: 'canvas', width: CANVAS_SIZE, height: CANVAS_SIZE, onMouseDown: this.handleMouseDown, onMouseMove: this.handleMouseMove, onMouseUp: this.handleMouseUp })
+    );
+  }
+});
+});
+
+require.register("components/ImagePicker.jsx", function(exports, require, module) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = _react2.default.createClass({
+  displayName: 'ImagePicker',
+
+  propTypes: {
+    images: _react2.default.PropTypes.arrayOf(_react2.default.PropTypes.shape({ url: _react2.default.PropTypes.string })).isRequired,
+    selected: _react2.default.PropTypes.shape({ url: _react2.default.PropTypes.string }),
+    onSelect: _react2.default.PropTypes.func
+  },
+
+  handleSelect: function handleSelect(image) {
+    this.props.onSelect && this.props.onSelect(image);
+  },
+  render: function render() {
+    var _this = this;
+
+    var selected = this.props.selected || {};
+    return _react2.default.createElement(
+      'div',
+      { className: 'ImagePicker' },
+      this.props.images.map(function (image) {
+        var sel = image.url === selected.url;
+        var className = 'ImagePicker-image' + (sel ? ' ImagePicker-image--selected' : '');
+        return _react2.default.createElement(
+          'div',
+          { className: className, onClick: function onClick() {
+              return _this.handleSelect(image);
+            }, key: image.url },
+          _react2.default.createElement(
+            'div',
+            { className: 'ImagePicker-wrapper' },
+            _react2.default.createElement('img', { src: image.url, crossOrigin: 'anonymous' })
+          )
+        );
+      })
+    );
+  }
+});
+});
+
+require.register("components/SizePicker.jsx", function(exports, require, module) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = _react2.default.createClass({
+  displayName: 'SizePicker',
+  render: function render() {
+    return _react2.default.createElement(
+      'span',
+      null,
+      'To be implemented.'
+    );
+  }
+});
+});
+
+require.register("components/TextPropertiesPicker.jsx", function(exports, require, module) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _react = require("react");
+
+var _react2 = _interopRequireDefault(_react);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = _react2.default.createClass({
+  displayName: "TextPropertiesPicker",
+
+  propTypes: {
+    fontSize: _react2.default.PropTypes.number.isRequired,
+    onFontSizeChange: _react2.default.PropTypes.func.isRequired
+  },
+
+  updateFontSize: function updateFontSize() {
+    var val = parseInt(this.refs.fontSize.value, 10);
+    this.props.onFontSizeChange(val);
+  },
+  render: function render() {
+    return _react2.default.createElement(
+      "div",
+      null,
+      "Font size:",
+      _react2.default.createElement(
+        "select",
+        { ref: "fontSize", value: this.props.fontSize, onChange: this.updateFontSize },
+        [8, 10, 12, 14, 16, 18, 20, 22, 26, 32, 36, 42, 48, 54].map(function (s) {
+          return _react2.default.createElement(
+            "option",
+            { key: s, value: s },
+            s
+          );
+        })
+      )
+    );
+  }
+});
+});
+
+require.register("container/App.jsx", function(exports, require, module) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _reactRedux = require('react-redux');
+
+var _actions = require('actions');
+
+var _LeftSidebar = require('./LeftSidebar');
+
+var _LeftSidebar2 = _interopRequireDefault(_LeftSidebar);
+
+var _RightSidebar = require('./RightSidebar');
+
+var _RightSidebar2 = _interopRequireDefault(_RightSidebar);
+
+var _ImageCanvas = require('components/ImageCanvas');
+
+var _ImageCanvas2 = _interopRequireDefault(_ImageCanvas);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var App = _react2.default.createClass({
+  displayName: 'App',
+  updateDrawnImage: function updateDrawnImage(data) {
+    if (this.props.drawing === data) return;
+    this.props.onCacheDrawing(data);
+  },
+  render: function render() {
+    return _react2.default.createElement(
+      'div',
+      { className: 'Container' },
+      _react2.default.createElement(_LeftSidebar2.default, null),
+      _react2.default.createElement(
+        'div',
+        { className: 'Main' },
+        _react2.default.createElement(
+          'h4',
+          { className: 'Main-subtitle' },
+          'Canvas'
+        ),
+        _react2.default.createElement(_ImageCanvas2.default, { image: this.props.selected, fontSize: this.props.fontSize, contrast: this.props.contrast, onRedraw: this.updateDrawnImage })
+      ),
+      _react2.default.createElement(_RightSidebar2.default, null)
+    );
+  }
+});
+
+var mapStateToProps = function mapStateToProps(state) {
+  return {
+    fontSize: state.fontSize,
+    contrast: state.contrast,
+    selected: state.selectedImage,
+    drawing: state.drawing
+  };
+};
+
+var mapDispatchToProps = function mapDispatchToProps(dispatch) {
+  return {
+    onCacheDrawing: function onCacheDrawing(drawing) {
+      dispatch((0, _actions.cacheDrawing)(drawing));
+    }
+  };
+};
+
+exports.default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(App);
+});
+
+require.register("container/LeftSidebar.jsx", function(exports, require, module) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _reactRedux = require('react-redux');
+
+var _actions = require('actions');
+
+var _Card = require('components/Card');
+
+var _Card2 = _interopRequireDefault(_Card);
+
+var _ImagePicker = require('components/ImagePicker');
+
+var _ImagePicker2 = _interopRequireDefault(_ImagePicker);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var LeftSidebar = function LeftSidebar(_ref) {
+  var availableImages = _ref.availableImages;
+  var selectedImage = _ref.selectedImage;
+  var onSelectImage = _ref.onSelectImage;
+
+  return _react2.default.createElement(
+    'div',
+    { className: 'Sidebar' },
+    _react2.default.createElement(
+      _Card2.default,
+      { title: 'Images' },
+      _react2.default.createElement(_ImagePicker2.default, { images: availableImages, selected: selectedImage, onSelect: onSelectImage })
+    )
+  );
+};
+
+var mapStateToProps = function mapStateToProps(state) {
+  return {
+    availableImages: state.availableImages,
+    selectedImage: state.selectedImage
+  };
+};
+
+var mapDispatchToProps = function mapDispatchToProps(dispatch) {
+  return {
+    onSelectImage: function onSelectImage(image) {
+      dispatch((0, _actions.selectImage)(image));
+    }
+  };
+};
+
+exports.default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(LeftSidebar);
+});
+
+require.register("container/RightSidebar.jsx", function(exports, require, module) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _reactRedux = require('react-redux');
+
+var _actions = require('actions');
+
+var _Card = require('components/Card');
+
+var _Card2 = _interopRequireDefault(_Card);
+
+var _FiltersPicker = require('components/FiltersPicker');
+
+var _FiltersPicker2 = _interopRequireDefault(_FiltersPicker);
+
+var _TextPropertiesPicker = require('components/TextPropertiesPicker');
+
+var _TextPropertiesPicker2 = _interopRequireDefault(_TextPropertiesPicker);
+
+var _SizePicker = require('components/SizePicker');
+
+var _SizePicker2 = _interopRequireDefault(_SizePicker);
+
+var _DownloadButton = require('components/DownloadButton');
+
+var _DownloadButton2 = _interopRequireDefault(_DownloadButton);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var RightSidebar = function RightSidebar(_ref) {
+  var drawing = _ref.drawing;
+  var contrast = _ref.contrast;
+  var onContrastChange = _ref.onContrastChange;
+  var fontSize = _ref.fontSize;
+  var onFontSizeChange = _ref.onFontSizeChange;
+
+  return _react2.default.createElement(
+    'div',
+    { className: 'Sidebar' },
+    _react2.default.createElement(
+      _Card2.default,
+      { title: 'Sizes' },
+      _react2.default.createElement(_SizePicker2.default, null)
+    ),
+    _react2.default.createElement(
+      _Card2.default,
+      { title: 'Filters' },
+      _react2.default.createElement(_FiltersPicker2.default, { contrast: contrast, onContrastChange: onContrastChange })
+    ),
+    _react2.default.createElement(
+      _Card2.default,
+      { title: 'Text' },
+      _react2.default.createElement(_TextPropertiesPicker2.default, { fontSize: fontSize, onFontSizeChange: onFontSizeChange })
+    ),
+    _react2.default.createElement(_DownloadButton2.default, { drawing: drawing }),
+    _react2.default.createElement(
+      'p',
+      { className: 'Credit' },
+      'Made by ',
+      _react2.default.createElement(
+        'a',
+        { href: 'http://goshakkk.name' },
+        'Gosha Arinich'
+      ),
+      '. ',
+      _react2.default.createElement(
+        'a',
+        { href: 'https://github.com/goshakkk/pabla' },
+        'Repo'
+      ),
+      '.'
+    )
+  );
+};
+
+var mapStateToProps = function mapStateToProps(state) {
+  return {
+    fontSize: state.fontSize,
+    contrast: state.contrast
+  };
+};
+
+var mapDispatchToProps = function mapDispatchToProps(dispatch) {
+  return {
+    onFontSizeChange: function onFontSizeChange(size) {
+      dispatch((0, _actions.setFontSize)(size));
+    },
+    onContrastChange: function onContrastChange(contrast) {
+      dispatch((0, _actions.setContrast)(contrast));
+    }
+  };
+};
+
+exports.default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(RightSidebar);
+});
+
+require.register("initialize.js", function(exports, require, module) {
+'use strict';
+
+var _reactDom = require('react-dom');
+
+var _reactDom2 = _interopRequireDefault(_reactDom);
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _redux = require('redux');
+
+var _reactRedux = require('react-redux');
+
+var _reducer = require('reducer');
+
+var _reducer2 = _interopRequireDefault(_reducer);
+
+var _App = require('container/App');
+
+var _App2 = _interopRequireDefault(_App);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var store = (0, _redux.createStore)(_reducer2.default);
+
+document.addEventListener('DOMContentLoaded', function () {
+  _reactDom2.default.render(_react2.default.createElement(
+    _reactRedux.Provider,
+    { store: store },
+    _react2.default.createElement(_App2.default, null)
+  ), document.querySelector('#app'));
+});
+});
+
+require.register("reducer.js", function(exports, require, module) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+exports.default = function () {
+  var state = arguments.length <= 0 || arguments[0] === undefined ? initialState : arguments[0];
+  var action = arguments[1];
+
+  switch (action.type) {
+    case 'SET_FONT_SIZE':
+      return Object.assign({}, state, { fontSize: action.size });
+    case 'SET_CONTRAST':
+      return Object.assign({}, state, { contrast: action.contrast });
+    case 'SELECT_IMAGE':
+      return Object.assign({}, state, { selectedImage: action.image });
+    case 'CACHE_DRAWING':
+      return Object.assign({}, state, { drawing: action.drawing });
+    default:
+      return state;
+  }
+};
+
+var images = [{ url: 'https://images.unsplash.com/photo-1458640904116-093b74971de9?fm=jpg' }, { url: 'https://images.unsplash.com/photo-1453227588063-bb302b62f50b?fm=jpg' }, { url: 'https://images.unsplash.com/photo-1451906278231-17b8ff0a8880?fm=jpg' }, { url: 'https://images.unsplash.com/photo-1447969025943-8219c41ea47a?fm=jpg' }, { url: 'https://images.unsplash.com/photo-1421749810611-438cc492b581?fm=jpg' }, { url: 'https://images.unsplash.com/photo-1449960238630-7e720e630019?fm=jpg' }, { url: 'https://images.unsplash.com/photo-1433190152045-5a94184895da?fm=jpg' }];
+
+var initialState = {
+  fontSize: 32,
+  contrast: true,
+  availableImages: images,
+  selectedImage: images[0],
+  drawing: null
+};
+});
+
+;
+//# sourceMappingURL=app.js.map
