@@ -70,6 +70,9 @@ export default React.createClass({
             </select>
           </Card>
           <div><a className="Button" download="pabla.jpg" target="_blank" onClick={this.handleDownload}>Download</a></div>
+          <p className="Credit">
+            Made by <a href="http://goshakkk.name">Gosha Arinich</a>. <a href="https://github.com/goshakkk/pabla">Repo</a>.
+          </p>
         </div>
       </div>
     );
