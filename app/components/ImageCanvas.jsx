@@ -278,13 +278,96 @@ const addText = (ctx, fontSize, _textRect, text) => {
 
   textRect[3] = totalHeight + 10;
 
-  if (isFocused) {
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = !mouseHeld ? "#0092d1" : "rgba(87, 205, 255, 0.5)";
-    ctx.strokeRect(textRect[0], textRect[1], textRect[2], textRect[3]);
-  }
   return textRect;
 };
+
+class TextEditor {
+  constructor(component) {
+    this.component = component;
+    this.cursor = 0;
+    this.cursor1 = null;
+    this.cursor2 = null;
+    this.showCursor = false;
+  }
+
+  getText() {
+    return this.component.props.text;
+  }
+
+  toggleCursor() {
+    this.showCursor = !this.showCursor;
+  }
+
+  moveCursor(dir, shift) {
+    // TODO: implement shift-selection
+    shift = false;
+
+    if (shift && !this.cursor1 && !this.cursor2) {
+      this.cursor1 = this.cursor2 = this.cursor;
+    }
+
+    if (!shift) {
+      this.cursor1 = this.cursor2 = null;
+    }
+
+    if (dir === 'left') {
+      this.cursor = this.cursor - 1;
+      if (shift) {
+        this.cursor2 = this.cursor;
+      }
+    } else if (dir === 'right') {
+      this.cursor = this.cursor + 1;
+      if (shift) {
+        this.cursor2 = this.cursor;
+      }
+    } else {
+      return;
+    }
+  }
+
+  insertOrDeleteChar(char) {
+    const currText = this.getText();
+    let newText;
+    if (!this.cursor1 && !this.cursor2) {
+      const globalCurrIdx = this.cursor;
+      const beforeCurr = currText.slice(0, globalCurrIdx + 1);
+      const afterCurr = currText.slice(globalCurrIdx+1);
+      if (!char) {
+        newText = beforeCurr.slice(0, -1) + afterCurr;
+        this.cursor = globalCurrIdx - 1;
+      } else {
+        newText = beforeCurr + char + afterCurr;
+        this.cursor = globalCurrIdx + 1;
+      }
+    } else {
+      const idx1 = this.cursor1;
+      const idx2 = this.cursor2;
+
+      const beforeCurr = currText.slice(0, idx1 + 1);
+      const afterCurr = currText.slice(idx2);
+      if (!char) {
+        newText = beforeCurr + afterCurr;
+        this.cursor1 = null;
+        this.cursor2 = null;
+        this.cursor = idx1;
+      } else {
+        newText = beforeCurr + char + afterCurr;
+        this.cursor1 = null;
+        this.cursor2 = null;
+        this.cursor = idx1 + 1;
+      }
+    }
+
+    return newText;
+  }
+
+  selectAll() {
+    // doesn't quite select the first char
+    this.cursor1 = 1;
+    this.cursor2 = this.getText().length;
+    this.cursor = this.cursor2;
+  }
+}
 
 // TODO:
 // wait for image loading
@@ -312,6 +395,7 @@ export default React.createClass({
   },
 
   getInitialState() {
+    this.textEditor = new TextEditor(this);
     return {};
   },
 
@@ -325,11 +409,10 @@ export default React.createClass({
     document.addEventListener('keypress', this.handleKeyUp);
     document.addEventListener('keydown', this.handleKeyDown);
     this.textRect = [20, 20, this.state.canvasWidth - 40, this.state.canvasHeight - 40];
-    this.cursor = 0;
     setTimeout(this.doRedraw, 100);
 
     setInterval(() => {
-      this.showCursor = !this.showCursor;
+      this.textEditor.toggleCursor();
       setTimeout(this.doRedraw, 100)
     }, 450);
   },
@@ -344,7 +427,8 @@ export default React.createClass({
     const canvas = this.refs.canvas;
     const ctx = canvas.getContext('2d');
 
-    const {mouseHeld, showCursor, textRect, cursor} = this;
+    const {showCursor, cursor, cursor1, cursor2} = this.textEditor;
+    const {mouseHeld, textRect} = this;
     const {text} = this.props;
     const {isFocused, isEditing, mouseDiff} = this.state;
 
@@ -359,8 +443,8 @@ export default React.createClass({
     let selectionRects = [];
 
     let setCursor;
-    if (isEditing && this.cursor1 && this.cursor2) {
-      const rects = findRectsForSelection(ctx, textRect, this.cursor1, this.cursor2, fontSize, text);
+    if (isEditing && cursor1 && cursor2) {
+      const rects = findRectsForSelection(ctx, textRect, cursor1, cursor2, fontSize, text);
       if (!rects) return;
 
       setCursor = true;
@@ -375,7 +459,7 @@ export default React.createClass({
     }
     let cursorLine;
     if (isEditing && showCursor && !setCursor) {
-      const pos = findPosForCursor(ctx, this.cursor, fontSize, text);
+      const pos = findPosForCursor(ctx, cursor, fontSize, text);
       if (pos) {
         const coords = findCoordsForPos(ctx, textRect, fontSize, text, pos);
         cursorLine = {
@@ -434,75 +518,17 @@ export default React.createClass({
   },
 
   moveCursor(dir, shift) {
-    // TODO: implement shift-selection
-    shift = false;
-
-    if (shift && !this.cursor1 && !this.cursor2) {
-      this.cursor1 = this.cursor2 = this.cursor;
-    }
-
-    if (!shift) {
-      this.cursor1 = this.cursor2 = null;
-    }
-
-    if (dir === 'left') {
-      this.cursor = this.cursor - 1;
-      if (shift) {
-        this.cursor2 = this.cursor;
-      }
-    } else if (dir === 'right') {
-      this.cursor = this.cursor + 1;
-      if (shift) {
-        this.cursor2 = this.cursor;
-      }
-    } else {
-      return;
-    }
-
+    this.textEditor.moveCursor(dir, shift);
     setTimeout(this.doRedraw, 50);
   },
 
   insertOrDeleteChar(char) {
-    const currText = this.props.text;
-    let newText;
-    if (!this.cursor1 && !this.cursor2) {
-      const globalCurrIdx = this.cursor;
-      const beforeCurr = currText.slice(0, globalCurrIdx + 1);
-      const afterCurr = currText.slice(globalCurrIdx+1);
-      if (!char) {
-        newText = beforeCurr.slice(0, -1) + afterCurr;
-        this.cursor = globalCurrIdx - 1;
-      } else {
-        newText = beforeCurr + char + afterCurr;
-        this.cursor = globalCurrIdx + 1;
-      }
-    } else {
-      const idx1 = this.cursor1;
-      const idx2 = this.cursor2;
-
-      const beforeCurr = currText.slice(0, idx1 + 1);
-      const afterCurr = currText.slice(idx2);
-      if (!char) {
-        newText = beforeCurr + afterCurr;
-        this.cursor1 = null;
-        this.cursor2 = null;
-        this.cursor = idx1;
-      } else {
-        newText = beforeCurr + char + afterCurr;
-        this.cursor1 = null;
-        this.cursor2 = null;
-        this.cursor = idx1 + 1;
-      }
-    }
-
+    const newText = this.textEditor.insertOrDeleteChar(char);
     this.props.onTextChange(newText);
   },
 
   selectAll() {
-    // doesn't quite select the first char
-    this.cursor1 = 1;
-    this.cursor2 = this.props.text.length;
-    this.cursor = this.cursor2;
+    this.textEditor.selectAll();
     setTimeout(this.doRedraw, 150);
   },
 
@@ -588,8 +614,8 @@ export default React.createClass({
         const {text, fontSize} = this.props;
         let idx1 = findIdxForCursor(ctx, textRect, cursor1, fontSize, text);
         let idx2 = findIdxForCursor(ctx, textRect, cursor2, fontSize, text);
-        this.cursor1 = idx1;
-        this.cursor2 = idx2;
+        this.textEditor.cursor1 = idx1;
+        this.textEditor.cursor2 = idx2;
       }
 
       setTimeout(this.doRedraw, 50);
@@ -603,10 +629,10 @@ export default React.createClass({
         const ctx = canvas.getContext('2d');
         const {textRect} = this;
         const {text, fontSize} = this.props;
-        this.cursor = findIdxForCursor(ctx, textRect, this.startPos, fontSize, text) || this.cursor;
+        this.textEditor.cursor = findIdxForCursor(ctx, textRect, this.startPos, fontSize, text) || this.textEditor.cursor;
         this.setState({ isEditing: true });
-        this.cursor1 = null;
-        this.cursor2 = null;
+        this.textEditor.cursor1 = null;
+        this.textEditor.cursor2 = null;
 
         setTimeout(this.doRedraw, 50);
       }
