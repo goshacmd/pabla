@@ -18,7 +18,7 @@ const App = React.createClass({
         <LeftSidebar />
         <div className="Main">
           <h4 className="Main-subtitle">Canvas</h4>
-          <ImageCanvas image={this.props.selected} fontSize={this.props.fontSize} contrast={this.props.contrast} onRedraw={this.updateDrawnImage} />
+          <ImageCanvas image={this.props.selected} fontSize={this.props.fontSize} contrast={this.props.contrast} size={this.props.size} onRedraw={this.updateDrawnImage} />
         </div>
         <RightSidebar />
       </div>
@@ -29,6 +29,7 @@ const App = React.createClass({
 const mapStateToProps = (state) => ({
   fontSize: state.fontSize,
   contrast: state.contrast,
+  size: state.size,
   selected: state.selectedImage,
   drawing: state.drawing
 });

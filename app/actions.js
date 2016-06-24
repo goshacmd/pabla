@@ -13,6 +13,11 @@ export const selectImage = (image) => ({
   image
 });
 
+export const setSize = (size) => ({
+  type: 'SET_SIZE',
+  size
+});
+
 export const cacheDrawing = (drawing) => ({
   type: 'CACHE_DRAWING',
   drawing

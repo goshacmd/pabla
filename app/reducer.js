@@ -13,7 +13,8 @@ const initialState = {
   contrast: true,
   availableImages: images,
   selectedImage: images[0],
-  drawing: null
+  drawing: null,
+  size: 'square'
 };
 
 export default function(state = initialState, action) {
@@ -24,6 +25,8 @@ export default function(state = initialState, action) {
       return Object.assign({}, state, { contrast: action.contrast });
     case 'SELECT_IMAGE':
       return Object.assign({}, state, { selectedImage: action.image });
+    case 'SET_SIZE':
+      return Object.assign({}, state, { size: action.size });
     case 'CACHE_DRAWING':
       return Object.assign({}, state, { drawing: action.drawing });
     default:

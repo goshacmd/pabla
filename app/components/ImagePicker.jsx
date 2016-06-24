@@ -18,7 +18,7 @@ export default React.createClass({
         const sel = image.url === selected.url;
         const className = 'ImagePicker-image' + (sel ? ' ImagePicker-image--selected' : '');
         return <div className={className} onClick={() => this.handleSelect(image)} key={image.url}>
-          <div className="ImagePicker-wrapper"><img src={image.url} crossOrigin="anonymous" /></div>
+          <div className="ImagePicker-image-wrapper"><img src={image.url} crossOrigin="anonymous" /></div>
         </div>
       })}
     </div>;

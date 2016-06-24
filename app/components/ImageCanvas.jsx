@@ -7,8 +7,13 @@ const keys = {
   39: 'arr_right'
 };
 
-const CANVAS_SIZE = 500;
-const MAX_TEXT_WIDTH = CANVAS_SIZE - 40 - 10;
+const TALL = [500, 750];
+const SQUARE = [500, 500];
+const WIDE = [500, 250];
+
+const CANVAS_WIDTH = 500;
+const CANVAS_HEIGHT = 250;
+const MAX_TEXT_WIDTH = CANVAS_WIDTH - 40 - 10;
 
 const getMousePos = (e, canvas) => {
   const rect = canvas.getBoundingClientRect();
@@ -23,14 +28,12 @@ const isInRect = (pos, rect) => {
   return (pos.x >= rect[0] && pos.x <= rect[0] + rect[2]) && (pos.y >= rect[1] && pos.y <= rect[1] + rect[3]);
 }
 
-const initCanvas = c => {
+const initCanvas = (c, width, height) => {
   // handle retina w
   // https://gist.github.com/joubertnel/870190
   const ctx = c.getContext('2d');
 
   if (window.devicePixelRatio) {
-    const width = c.width;
-    const height = c.height;
     c.width = width * window.devicePixelRatio;
     c.height = height * window.devicePixelRatio;
     window.c = c;
@@ -40,18 +43,31 @@ const initCanvas = c => {
   }
 };
 
-const applyContrast = (ctx, canvasDim) => {
+const applyContrast = (ctx, canvasWidth, canvasHeight) => {
   ctx.fillStyle = "rgba(45, 45, 45, 0.45)";
-  ctx.fillRect(0, 0, canvasDim, canvasDim);
+  ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 };
 
-const drawImage = (ctx, canvasDim, img) => {
+const drawImage = (ctx, canvasWidth, canvasHeight, img) => {
   const imgWidth = img.naturalWidth;
   const imgHeight = img.naturalHeight;
-  const imgMin = imgWidth > imgHeight ? imgHeight : imgWidth;
-  const imgMax = imgWidth < imgHeight ? imgHeight : imgWidth;
-  const imageSlice = imgMin;
-  ctx.drawImage(img, (imgMax - imgMin) / 2, 0, imageSlice, imageSlice, 0, 0, canvasDim, canvasDim);
+
+  const origRatio = imgWidth / imgHeight;
+  const canvasRatio = canvasWidth / canvasHeight;
+
+  let zoneWidth, zoneHeight;
+  if (canvasRatio >= origRatio) {
+    zoneWidth = imgWidth;
+    zoneHeight = imgWidth / canvasRatio;
+  } else {
+    zoneWidth = imgHeight * canvasRatio;
+    zoneHeight = imgHeight;
+  }
+
+  const xPad = (imgWidth - zoneWidth) / 2;
+  const yPad = (imgHeight - zoneHeight) / 2;
+
+  ctx.drawImage(img, xPad, yPad, zoneWidth, zoneHeight, 0, 0, canvasWidth, canvasHeight);
 };
 
 const splitTextInLines = (ctx, maxWidth, text) => {
@@ -198,14 +214,12 @@ const findRectsForSelection = (ctx, textRect, cursor1, cursor2, fontSize, text) 
   }
 };
 
-const addText = (ctx, canvasDim, fontSize, isFocused, mouseHeld, textRect, text) => {
+const addText = (ctx, fontSize, isFocused, mouseHeld, textRect, text) => {
   ctx.font = `${fontSize}px Georgia`;
   ctx.fillStyle = "white";
   const maxWidth = MAX_TEXT_WIDTH;
   const [lines, mapIndices] = splitTextInLines(ctx, maxWidth, text);
 
-  //const corners = (canvasDim-maxActual)/2 - 10;
-  //if (!textRect) textRect = [corners, 100-fontSize, maxActual+20, totalHeight+10];
   const spaced = fontSize * 1.3;
   lines.forEach((line, idx) => {
     const {x, y} = coordsForLine(textRect, fontSize, idx);
@@ -228,20 +242,41 @@ const addText = (ctx, canvasDim, fontSize, isFocused, mouseHeld, textRect, text)
 // TODO:
 // wait for image loading
 export default React.createClass({
+  initSize(size, cb) {
+    const obj = {};
+    [obj.canvasWidth, obj.canvasHeight] = {
+      'tall': TALL,
+      'wide': WIDE,
+      'square': SQUARE
+    }[size];
+    const state = this.state;
+    if (state.canvasWidth === obj.canvasWidth && state.canvasHeight === obj.canvasHeight) {
+    } else {
+      this.setState(obj, cb);
+    }
+  },
+
   componentWillReceiveProps(nextProps) {
-    this.redraw(nextProps);
+    this.initSize(nextProps.size, () => {
+      initCanvas(this.refs.canvas, this.state.canvasWidth, this.state.canvasHeight);
+      this.redraw(nextProps);
+    });
   },
 
   getInitialState() {
     return { text: '“Others have seen what is and asked why. I have seen what could be and asked why not. ” - Pablo Picasso' };
   },
 
+  componentWillMount() {
+    this.initSize(this.props.size || 'square');
+  },
+
   componentDidMount() {
     const c = this.refs.canvas;
-    initCanvas(c);
+    initCanvas(c, this.state.canvasWidth, this.state.canvasHeight);
     document.addEventListener('keypress', this.handleKeyUp);
     document.addEventListener('keydown', this.handleKeyDown);
-    this.textRect = [20, 20, CANVAS_SIZE - 40, CANVAS_SIZE - 40];
+    this.textRect = [20, 20, this.state.canvasWidth - 40, this.state.canvasHeight - 40];
     this.cursor = 0;
     setTimeout(this.doRedraw, 100);
 
@@ -269,11 +304,10 @@ export default React.createClass({
 
     const img = [].slice.apply(document.images).find(i => nextProps.image.url === i.src);
     if (!img) return;
-    const canvasDim = CANVAS_SIZE;
 
-    drawImage(ctx, canvasDim, img);
-    if (hasContrast) applyContrast(ctx, canvasDim);
-    this.textRect = addText(ctx, canvasDim, fontSize, isFocused, mouseHeld, textRect,  text);
+    drawImage(ctx, this.state.canvasWidth, this.state.canvasHeight, img);
+    if (hasContrast) applyContrast(ctx, this.state.canvasWidth, this.state.canvasHeight)
+    this.textRect = addText(ctx, fontSize, isFocused, mouseHeld, textRect,  text);
     let setCursor;
     if (isEditing && this.cursor1 && this.cursor2) {
       const rects = findRectsForSelection(ctx, textRect, this.cursor1, this.cursor2, fontSize, text);
@@ -491,7 +525,7 @@ export default React.createClass({
   render() {
     const image = this.props.image || {};
     return <div className="ImageCanvas">
-      <canvas ref="canvas" width={CANVAS_SIZE} height={CANVAS_SIZE} onMouseDown={this.handleMouseDown} onMouseMove={this.handleMouseMove} onMouseUp={this.handleMouseUp} />
+      <canvas ref="canvas" width={this.state.canvasWidth} height={this.state.canvasHeight} onMouseDown={this.handleMouseDown} onMouseMove={this.handleMouseMove} onMouseUp={this.handleMouseUp} />
     </div>
   }
 });
