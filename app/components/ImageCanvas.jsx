@@ -53,7 +53,6 @@ const SQUARE = [500, 500];
 const WIDE = [500, 250];
 
 const CANVAS_WIDTH = 500;
-const CANVAS_HEIGHT = 250;
 const MAX_TEXT_WIDTH = CANVAS_WIDTH - 40 - 10;
 
 const getMousePos = (e, canvas) => {
@@ -273,7 +272,6 @@ const addText = (ctx, fontSize, _textRect, text) => {
     ctx.fillText(line, x, y, textRect[2]-20);
   });
 
-  const maxActual = Math.min(300, Math.max(...lines.map(line => ctx.measureText(line).width)));
   const totalHeight = lines.length * spaced;
 
   textRect[3] = totalHeight + 10;
@@ -442,12 +440,10 @@ export default React.createClass({
 
     let selectionRects = [];
 
-    let setCursor;
     if (isEditing && cursor1 && cursor2) {
       const rects = findRectsForSelection(ctx, textRect, cursor1, cursor2, fontSize, text);
       if (!rects) return;
 
-      setCursor = true;
       selectionRects = rects.map(rect => {
         const {x1,x2,y1,y2} = rect;
         return {
@@ -458,7 +454,7 @@ export default React.createClass({
       });
     }
     let cursorLine;
-    if (isEditing && showCursor && !setCursor) {
+    if (isEditing && showCursor && selectionRects.length === 0) {
       const pos = findPosForCursor(ctx, cursor, fontSize, text);
       if (pos) {
         const coords = findCoordsForPos(ctx, textRect, fontSize, text, pos);
