@@ -15,7 +15,7 @@ const initialState = {
   selectedImage: images[0],
   drawing: null,
   size: 'square',
-  text: '“Others have seen what is and asked why. I have seen what could be and asked why not. ” - Pablo Picasso'
+  text: '“Others have seen what is and asked why. I have seen what could be and asked why not. ”\n- Pablo Picasso'
 };
 
 export default function(state = initialState, action) {

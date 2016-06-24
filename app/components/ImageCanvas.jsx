@@ -71,12 +71,21 @@ const drawImage = (ctx, canvasWidth, canvasHeight, img) => {
 };
 
 const splitTextInLines = (ctx, maxWidth, text) => {
-  const words = text.split(' ');
+  const paras = text.split('\n');
+  const words = paras.map(para => para.split(' ')).reduce((acc, words, idx) => {
+    const a = idx == paras.length - 1 ? [] : ['\n'];
+    return acc.concat(words).concat(a);
+  }, []);
   let lines = [''];
   let indices = [[]];
 
   let lastGlobIdx = 0;
   words.forEach((word, idx) => {
+    if (word === '\n') {
+      indices.push([]);
+      lines.push('');
+      return;
+    }
     const lastIdx = lines.length-1;
     let lastLine = lines[lastIdx]
     const newText = lastLine.length === 0 ? word : lastLine + ' ' + word;
@@ -400,8 +409,6 @@ export default React.createClass({
     }
 
     this.props.onTextChange(newText);
-    //this.setState({ text: newText });
-    //setTimeout(this.doRedraw, 50);
   },
 
   selectAll() {
@@ -442,6 +449,7 @@ export default React.createClass({
       } else {
         let char = String.fromCharCode(e.charCode);
         if (!e.shiftKey) char = char.toLowerCase();
+        if (e.keyCode === 13) char = '\n';
         this.insertOrDeleteChar(char);
       }
     }
