@@ -264,7 +264,7 @@ export default React.createClass({
   },
 
   getInitialState() {
-    return { text: '“Others have seen what is and asked why. I have seen what could be and asked why not. ” - Pablo Picasso' };
+    return {};
   },
 
   componentWillMount() {
@@ -297,7 +297,8 @@ export default React.createClass({
     const ctx = canvas.getContext('2d');
 
     const {mouseHeld, showCursor, textRect, cursor} = this;
-    const {text, isFocused, isEditing, mouseDiff} = this.state;
+    const {text} = this.props;
+    const {isFocused, isEditing, mouseDiff} = this.state;
 
     const hasContrast = nextProps.contrast;
     const fontSize = nextProps.fontSize;
@@ -366,7 +367,7 @@ export default React.createClass({
   },
 
   insertOrDeleteChar(char) {
-    const currText = this.state.text;
+    const currText = this.props.text;
     let newText;
     if (!this.cursor1 && !this.cursor2) {
       const globalCurrIdx = this.cursor;
@@ -398,14 +399,15 @@ export default React.createClass({
       }
     }
 
-    this.setState({ text: newText });
-    setTimeout(this.doRedraw, 50);
+    this.props.onTextChange(newText);
+    //this.setState({ text: newText });
+    //setTimeout(this.doRedraw, 50);
   },
 
   selectAll() {
     // doesn't quite select the first char
     this.cursor1 = 1;
-    this.cursor2 = this.state.text.length;
+    this.cursor2 = this.props.text.length;
     this.cursor = this.cursor2;
     setTimeout(this.doRedraw, 150);
   },
@@ -488,8 +490,7 @@ export default React.createClass({
         const canvas = this.refs.canvas;
         const ctx = canvas.getContext('2d');
         const {textRect} = this;
-        const {text} = this.state;
-        const fontSize = this.props.fontSize;
+        const {text, fontSize} = this.props;
         let idx1 = findIdxForCursor(ctx, textRect, cursor1, fontSize, text);
         let idx2 = findIdxForCursor(ctx, textRect, cursor2, fontSize, text);
         this.cursor1 = idx1;
@@ -506,9 +507,8 @@ export default React.createClass({
         const canvas = this.refs.canvas;
         const ctx = canvas.getContext('2d');
         const {textRect} = this;
-        const {text} = this.state;
-        const fontSize = this.props.fontSize;
-        this.cursor = findIdxForCursor(ctx, this.textRect, this.startPos, fontSize, text) || this.cursor;
+        const {text, fontSize} = this.props;
+        this.cursor = findIdxForCursor(ctx, textRect, this.startPos, fontSize, text) || this.cursor;
         this.setState({ isEditing: true });
         this.cursor1 = null;
         this.cursor2 = null;

@@ -1,6 +1,6 @@
 import React from 'react';
 import {connect} from 'react-redux';
-import {cacheDrawing} from 'actions';
+import {cacheDrawing, setText} from 'actions';
 
 import LeftSidebar from './LeftSidebar';
 import RightSidebar from './RightSidebar';
@@ -18,7 +18,7 @@ const App = React.createClass({
         <LeftSidebar />
         <div className="Main">
           <h4 className="Main-subtitle">Canvas</h4>
-          <ImageCanvas image={this.props.selected} fontSize={this.props.fontSize} contrast={this.props.contrast} size={this.props.size} onRedraw={this.updateDrawnImage} />
+          <ImageCanvas image={this.props.selected} text={this.props.text} fontSize={this.props.fontSize} contrast={this.props.contrast} size={this.props.size} onRedraw={this.updateDrawnImage} onTextChange={this.props.onTextChange} />
         </div>
         <RightSidebar />
       </div>
@@ -31,12 +31,17 @@ const mapStateToProps = (state) => ({
   contrast: state.contrast,
   size: state.size,
   selected: state.selectedImage,
-  drawing: state.drawing
+  drawing: state.drawing,
+  text: state.text
 });
 
 const mapDispatchToProps = (dispatch) => ({
   onCacheDrawing(drawing) {
     dispatch(cacheDrawing(drawing));
+  },
+
+  onTextChange(text) {
+    dispatch(setText(text));
   }
 });
 

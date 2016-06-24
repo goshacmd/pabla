@@ -14,7 +14,8 @@ const initialState = {
   availableImages: images,
   selectedImage: images[0],
   drawing: null,
-  size: 'square'
+  size: 'square',
+  text: '“Others have seen what is and asked why. I have seen what could be and asked why not. ” - Pablo Picasso'
 };
 
 export default function(state = initialState, action) {
@@ -27,6 +28,8 @@ export default function(state = initialState, action) {
       return Object.assign({}, state, { selectedImage: action.image });
     case 'SET_SIZE':
       return Object.assign({}, state, { size: action.size });
+    case 'SET_TEXT':
+      return Object.assign({}, state, { text: action.text });
     case 'CACHE_DRAWING':
       return Object.assign({}, state, { drawing: action.drawing });
     default:

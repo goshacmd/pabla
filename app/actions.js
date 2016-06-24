@@ -18,6 +18,11 @@ export const setSize = (size) => ({
   size
 });
 
+export const setText = (text) => ({
+  type: 'SET_TEXT',
+  text
+});
+
 export const cacheDrawing = (drawing) => ({
   type: 'CACHE_DRAWING',
   drawing
