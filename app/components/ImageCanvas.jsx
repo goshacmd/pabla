@@ -8,12 +8,17 @@ const canvasComponents = {
     applyContrast(ctx, child.frame);
   },
   text(ctx, child) {
-    const rect = addText(ctx, child.fontSize, child.isFocused, child.mouseHeld, child.frame, child.text);
+    const rect = addText(ctx, child.fontSize, child.frame, child.text);
     child.onUpdateRect && child.onUpdateRect(rect);
   },
   rect(ctx, child) {
     ctx.fillStyle = child.fill;
     ctx.fillRect(...child.frame);
+  },
+  outline(ctx, child) {
+    ctx.lineWidth = child.width;
+    ctx.strokeStyle = child.color;
+    ctx.strokeRect(...child.frame);
   },
   line(ctx, child) {
     ctx.strokeStyle = child.color;
@@ -94,6 +99,7 @@ const drawImage = (ctx, frame, img) => {
   const origRatio = imgWidth / imgHeight;
   const canvasRatio = canvasWidth / canvasHeight;
 
+  // determine crop
   let zoneWidth, zoneHeight;
   if (canvasRatio >= origRatio) {
     zoneWidth = imgWidth;
@@ -103,6 +109,7 @@ const drawImage = (ctx, frame, img) => {
     zoneHeight = imgHeight;
   }
 
+  // center
   const xPad = (imgWidth - zoneWidth) / 2;
   const yPad = (imgHeight - zoneHeight) / 2;
 
@@ -206,19 +213,6 @@ const findCoordsForPos = (ctx, textRect, fontSize, text, pos) => {
   return { x: x+wd1, y1: y-fontSize+7, y2: y+7 };
 };
 
-const drawCursor = (ctx, coords) => {
-  const {x, y1, y2} = coords;
-
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.75)";
-  ctx.lineWidth = 1;
-  ctx.lineCap = 'round';
-  ctx.beginPath();
-  ctx.moveTo(x, y1);
-  ctx.lineTo(x, y2);
-  ctx.stroke();
-  ctx.strokeStyle = null;
-};
-
 const findRectsForSelection = (ctx, textRect, cursor1, cursor2, fontSize, text) => {
   let idx1 = cursor1;
   let idx2 = cursor2;
@@ -265,7 +259,9 @@ const findRectsForSelection = (ctx, textRect, cursor1, cursor2, fontSize, text) 
   }
 };
 
-const addText = (ctx, fontSize, isFocused, mouseHeld, textRect, text) => {
+const addText = (ctx, fontSize, _textRect, text) => {
+  const textRect = _textRect.slice();
+
   ctx.font = `${fontSize}px Georgia`;
   ctx.fillStyle = "white";
   const maxWidth = MAX_TEXT_WIDTH;
@@ -410,13 +406,18 @@ export default React.createClass({
           type: 'text',
           frame: textRect,
           fontSize,
-          isFocused,
-          mouseHeld,
           text,
           onUpdateRect: (newRect) => {
             this.textRect = newRect;
           }
         },
+        (isFocused ?
+          {
+            type: 'outline',
+            width: 2,
+            color: !mouseHeld ? "#0092d1" : "rgba(87, 205, 255, 0.5)",
+            frame: textRect
+          } : null),
         ...selectionRects,
         cursorLine
       ]
