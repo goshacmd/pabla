@@ -1,5 +1,41 @@
 import React from 'react';
 
+const canvasComponents = {
+  image(ctx, child) {
+    drawImage(ctx, child.frame, child.image);
+  },
+  filter(ctx, child) {
+    applyContrast(ctx, child.frame);
+  },
+  text(ctx, child) {
+    const rect = addText(ctx, child.fontSize, child.isFocused, child.mouseHeld, child.frame, child.text);
+    child.onUpdateRect && child.onUpdateRect(rect);
+  },
+  rect(ctx, child) {
+    ctx.fillStyle = child.fill;
+    ctx.fillRect(...child.frame);
+  },
+  line(ctx, child) {
+    ctx.strokeStyle = child.color;
+    ctx.lineWidth = child.width;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(...child.from);
+    ctx.lineTo(...child.to);
+    ctx.stroke();
+    ctx.strokeStyle = null;
+  }
+};
+
+const renderCanvasLayout = (ctx, layout) => {
+  layout.children.forEach(child => {
+    if (!child) return;
+    const renderer = canvasComponents[child.type];
+    if (!renderer) console.error(`Unknown canvas component: ${child.type}`);
+    renderer(ctx, child);
+  });
+};
+
 const keys = {
   8:  'backspace',
   27: 'escape',
@@ -43,12 +79,15 @@ const initCanvas = (c, width, height) => {
   }
 };
 
-const applyContrast = (ctx, canvasWidth, canvasHeight) => {
+const applyContrast = (ctx, frame) => {
   ctx.fillStyle = "rgba(45, 45, 45, 0.45)";
-  ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+  ctx.fillRect(...frame);
 };
 
-const drawImage = (ctx, canvasWidth, canvasHeight, img) => {
+const drawImage = (ctx, frame, img) => {
+  const canvasWidth = frame[2];
+  const canvasHeight = frame[3];
+
   const imgWidth = img.naturalWidth;
   const imgHeight = img.naturalHeight;
 
@@ -70,7 +109,10 @@ const drawImage = (ctx, canvasWidth, canvasHeight, img) => {
   ctx.drawImage(img, xPad, yPad, zoneWidth, zoneHeight, 0, 0, canvasWidth, canvasHeight);
 };
 
-const splitTextInLines = (ctx, maxWidth, text) => {
+const splitTextInLines = (ctx, maxWidth, fontSize, text) => {
+  ctx.font = `${fontSize}px Georgia`;
+  ctx.fillStyle = "white";
+
   const paras = text.split('\n');
   const words = paras.map(para => para.split(' ')).reduce((acc, words, idx) => {
     const a = idx == paras.length - 1 ? [] : ['\n'];
@@ -108,7 +150,7 @@ const findIdxForCursor = (ctx, textRect, cursorAt, fontSize, text) => {
   ctx.font = `${fontSize}px Georgia`;
   ctx.fillStyle = "white";
   const maxWidth = MAX_TEXT_WIDTH;
-  const [lines, mapIndices] = splitTextInLines(ctx, maxWidth, text);
+  const [lines, mapIndices] = splitTextInLines(ctx, maxWidth, fontSize, text);
   const spaced = fontSize * 1.3;
   let cursor;
   lines.forEach((line, idx) => {
@@ -138,9 +180,9 @@ const coordsForLine = (textRect, fontSize, lineNo) => {
   return { x: textRect[0] + 10, y: textRect[1] + fontSize + (lineNo * spaced) };
 };
 
-const findPosForCursor = (ctx, cursor, text) => {
+const findPosForCursor = (ctx, cursor, fontSize, text) => {
   const maxWidth = MAX_TEXT_WIDTH;
-  const [lines, mapIndices] = splitTextInLines(ctx, maxWidth, text);
+  const [lines, mapIndices] = splitTextInLines(ctx, maxWidth, fontSize, text);
 
   const line = mapIndices.find(line => line.indexOf(cursor+1) !== -1);
   let pos;
@@ -183,11 +225,11 @@ const findRectsForSelection = (ctx, textRect, cursor1, cursor2, fontSize, text) 
   if (idx1 > idx2) {
     [idx1, idx2] = [idx2, idx1];
   }
-  const pos1 = findPosForCursor(ctx, idx1, text);
-  const pos2 = findPosForCursor(ctx, idx2, text);
+  const pos1 = findPosForCursor(ctx, idx1, fontSize, text);
+  const pos2 = findPosForCursor(ctx, idx2, fontSize, text);
 
   if (!(pos1 && pos2)) return;
-  const [lines, mapIndices] = splitTextInLines(ctx, MAX_TEXT_WIDTH, text);
+  const [lines, mapIndices] = splitTextInLines(ctx, MAX_TEXT_WIDTH, fontSize, text);
 
   if (pos1.lineNo === pos2.lineNo) {
     const line = mapIndices.find(line => line.indexOf(idx1+1) !== -1);
@@ -227,7 +269,7 @@ const addText = (ctx, fontSize, isFocused, mouseHeld, textRect, text) => {
   ctx.font = `${fontSize}px Georgia`;
   ctx.fillStyle = "white";
   const maxWidth = MAX_TEXT_WIDTH;
-  const [lines, mapIndices] = splitTextInLines(ctx, maxWidth, text);
+  const [lines, mapIndices] = splitTextInLines(ctx, maxWidth, fontSize, text);
 
   const spaced = fontSize * 1.3;
   lines.forEach((line, idx) => {
@@ -260,6 +302,7 @@ export default React.createClass({
     }[size];
     const state = this.state;
     if (state.canvasWidth === obj.canvasWidth && state.canvasHeight === obj.canvasHeight) {
+      cb();
     } else {
       this.setState(obj, cb);
     }
@@ -315,28 +358,71 @@ export default React.createClass({
     const img = [].slice.apply(document.images).find(i => nextProps.image.url === i.src);
     if (!img) return;
 
-    drawImage(ctx, this.state.canvasWidth, this.state.canvasHeight, img);
-    if (hasContrast) applyContrast(ctx, this.state.canvasWidth, this.state.canvasHeight)
-    this.textRect = addText(ctx, fontSize, isFocused, mouseHeld, textRect,  text);
+    const {canvasWidth, canvasHeight} = this.state;
+
+    let selectionRects = [];
+
     let setCursor;
     if (isEditing && this.cursor1 && this.cursor2) {
       const rects = findRectsForSelection(ctx, textRect, this.cursor1, this.cursor2, fontSize, text);
       if (!rects) return;
 
       setCursor = true;
-      rects.forEach(rect => {
+      selectionRects = rects.map(rect => {
         const {x1,x2,y1,y2} = rect;
-        ctx.fillStyle = "rgba(87, 205, 255, 0.5)";
-        ctx.fillRect(x1,y1,x2-x1,y2-y1);
+        return {
+          type: 'rect',
+          fill: 'rgba(87, 205, 255, 0.5)',
+          frame: [x1, y1, x2-x1, y2-y1]
+        };
       });
     }
+    let cursorLine;
     if (isEditing && showCursor && !setCursor) {
-      const pos = findPosForCursor(ctx, this.cursor, text);
+      const pos = findPosForCursor(ctx, this.cursor, fontSize, text);
       if (pos) {
         const coords = findCoordsForPos(ctx, textRect, fontSize, text, pos);
-        drawCursor(ctx, coords);
+        cursorLine = {
+          type: 'line',
+          color: 'rgba(255, 255, 255, 0.75)',
+          width: 1,
+          from: [coords.x, coords.y1],
+          to: [coords.x, coords.y2]
+        };
       }
     }
+
+    const layout = {
+      frame: [0, 0, canvasWidth, canvasHeight],
+      children: [
+        {
+          type: 'image',
+          image: img,
+          frame: [0, 0, canvasWidth, canvasHeight],
+        },
+        (hasContrast ?
+          {
+            type: 'filter',
+            name: 'contrast',
+            frame: [0, 0, canvasWidth, canvasHeight]
+          } : null),
+        {
+          type: 'text',
+          frame: textRect,
+          fontSize,
+          isFocused,
+          mouseHeld,
+          text,
+          onUpdateRect: (newRect) => {
+            this.textRect = newRect;
+          }
+        },
+        ...selectionRects,
+        cursorLine
+      ]
+    };
+
+    renderCanvasLayout(ctx, layout);
 
     this.props.onRedraw && this.props.onRedraw(this.refs.canvas.toDataURL('image/jpeg'));
   },
