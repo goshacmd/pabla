@@ -7,6 +7,14 @@ import ReactInstanceMap from 'react/lib/ReactInstanceMap';
 import {renderCanvasLayout} from 'util/canvas';
 
 const Container = Object.assign({}, ReactMultiChild.Mixin, {
+  mountAndInjectChildren(children, tx, ct) {
+    const mounted = this.mountChildren(children, tx, ct);
+    window.requestAnimationFrame(this._draw);
+  },
+
+  updateChildren(children, tx, ct) {
+    this.mountAndInjectChildren(children, tx, ct);
+  }
 });
 
 export default React.createClass({
@@ -20,6 +28,7 @@ export default React.createClass({
   },
   componentDidMount() {
     this._debugID = this._reactInternalInstance._debugID;
+
     const tx = ReactUpdates.ReactReconcileTransaction.getPooled();
     tx.perform(this.mountAndInjectChildren, this, this.props.children, tx, ReactInstanceMap.get(this)._context);
     ReactUpdates.ReactReconcileTransaction.release(tx);
@@ -30,17 +39,12 @@ export default React.createClass({
   componentDidUpdate(oldProps) {
     // TODO: update children instead
     const tx = ReactUpdates.ReactReconcileTransaction.getPooled();
-    tx.perform(this.mountAndInjectChildren, this, this.props.children, tx, ReactInstanceMap.get(this)._context);
+    tx.perform(this.updateChildren, this, this.props.children, tx, ReactInstanceMap.get(this)._context);
     ReactUpdates.ReactReconcileTransaction.release(tx);
 
     if (oldProps.height !== this.props.height || oldProps.width !== this.props.width) {
       this.refs.canvas.getContext('2d').scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
     }
-  },
-
-  mountAndInjectChildren(children, tx, ct) {
-    const mounted = this.mountChildren(children, tx, ct);
-    window.requestAnimationFrame(this._draw);
   },
 
   _draw() {

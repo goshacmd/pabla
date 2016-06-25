@@ -263,11 +263,7 @@ export default React.createClass({
       return <CanvasRect key={i} fill="rgba(87, 205, 255, 0.5)" frame={frame} />
     });
 
-    let cursorLine;
-    const cursorCoords = this.getCursorCoords(selectionRects);
-    if (cursorCoords) {
-      cursorLine = <CanvasLine color="rgba(255, 255, 255, 0.75)" width={1} from={[cursorCoords.x, cursorCoords.y1]} to={[cursorCoords.x, cursorCoords.y2]} />;
-    }
+    const cursorCoords = this.getCursorCoords(selectionRectFrames);
 
     return <div className="ImageCanvas">
       <Canvas ref="canvas" width={canvasWidth} height={canvasHeight} onMouseDown={this.handleMouseDown} onMouseMove={this.handleMouseMove} onMouseUp={this.handleMouseUp}>
@@ -278,12 +274,14 @@ export default React.createClass({
           <CanvasFilter frame={mainFrame} /> :
           null}
         {textRect ?
-          <CanvasText text={text} frame={textRect} fontSize={fontSize} onUpdateRect={newRect => this.textRect = newRect} /> :
+          <CanvasText ref="textRect" text={text} frame={textRect} fontSize={fontSize} onUpdateRect={newRect => this.textRect = newRect} /> :
           null}
         {textRect && isFocused ?
           <CanvasOutline width={2} frame={textRect} color={mouseHeld ? 'rgba(87, 205, 255, 0.5)' : '#0092d1'} /> :
           null}
-        {cursorLine}
+        {cursorCoords ?
+          <CanvasLine color="rgba(255, 255, 255, 0.75)" width={1} from={[cursorCoords.x, cursorCoords.y1]} to={[cursorCoords.x, cursorCoords.y2]} /> :
+          null}
         {selectionRects}
       </Canvas>
     </div>

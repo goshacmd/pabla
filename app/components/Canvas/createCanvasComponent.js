@@ -4,13 +4,19 @@ export default (name, drawFn) => {
   };
   CanvasComp.displayName = 'Rect';
   Object.assign(CanvasComp.prototype, {
-    construct() {},
+    construct() {
+    },
     mountComponent(transaction, hostParent, hostContainerInfo, context) {
       return {};
     },
-    receiveComponent() {},
-    unmountComponent() {},
+    receiveComponent() {
+    },
+    unmountComponent() {
+    },
     getNativeNode() {
+      return drawFn(this._el.props);
+    },
+    getPublicInstance() {
       return drawFn(this._el.props);
     }
   });
