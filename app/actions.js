@@ -1,3 +1,5 @@
+import {getPopularImages, searchImages as _searchImages} from 'util/unsplash';
+
 export const setFontSize = (size) => ({
   type: 'SET_FONT_SIZE',
   size
@@ -28,11 +30,28 @@ export const cacheDrawing = (drawing) => ({
   drawing
 });
 
+
 export const initialFetchImages = () => {
   return dispatch => {
-    require('util/unsplash').getPopularImages().then(images => {
+    getPopularImages().then(images => {
       dispatch({ type: 'RECEIVE_IMAGES', images });
       dispatch(selectImage(images[0]));
+    });
+  };
+};
+
+export const searchImages = (query) => {
+  return dispatch => {
+    _searchImages(query).then(images => {
+      dispatch({ type: 'RECEIVE_IMAGES', images });
+    });
+  };
+};
+
+export const resetSearch = () => {
+  return dispatch => {
+    getPopularImages().then(images => {
+      dispatch({ type: 'RECEIVE_IMAGES', images });
     });
   };
 };

@@ -11,9 +11,25 @@ export default React.createClass({
     this.props.onSelect && this.props.onSelect(image);
   },
 
+  search(e) {
+    e.preventDefault();
+
+    const value = this.refs.search.value;
+
+    if (value && value.length > 0) {
+      this.props.onSearch(value);
+    } else {
+      this.props.onSearchReset();
+    }
+  },
+
   render() {
     const selected = this.props.selected || {};
     return <div className="ImagePicker">
+      <form onSubmit={this.search}>
+        <input ref="search" type="text" className="ImagePicker-search" placeholder="Search images" />
+      </form>
+
       {this.props.images.map(image => {
         const sel = image.url === selected.url;
         const className = 'ImagePicker-image' + (sel ? ' ImagePicker-image--selected' : '');

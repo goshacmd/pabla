@@ -105,6 +105,17 @@ body {
   height: calc(100vh - 74px);
   margin-top: -8px;
 
+  &-search {
+    padding: 4px 8px;
+    appearance: none;
+    display: block;
+    width: 100%;
+    margin: 4px 0;
+    border: none;
+    font-size: 13px;
+    outline: none;
+  }
+
   &-image {
     cursor: pointer;
     padding: 4px 8px;
