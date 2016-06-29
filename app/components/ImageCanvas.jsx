@@ -1,6 +1,8 @@
 import React from 'react';
 import {Canvas, CanvasRect, CanvasFilter, CanvasImage, CanvasText, CanvasOutline, CanvasLine} from './Canvas';
 
+import {getImage} from 'util/imageCache';
+
 import {findIdxForCursor, findPosForCursor, findCoordsForPos, findRectsForSelection} from 'util/text';
 import TextEditor from 'util/textEditor';
 
@@ -39,19 +41,27 @@ const applyMouseDiff = (textRect, mouseDiff) => {
 // TODO:
 // wait for image loading
 export default React.createClass({
-  initSize(size, cb) {
+  initSize(size) {
     const obj = {};
     [obj.canvasWidth, obj.canvasHeight] = SIZES[size];
     const state = this.state;
     if (state.canvasWidth === obj.canvasWidth && state.canvasHeight === obj.canvasHeight) {
-      cb();
+      return Promise.resolve();
     } else {
-      this.setState(obj, cb);
+      return new Promise(resolve => {
+        this.setState(obj, resolve);
+      });
     }
   },
 
+  loadImage(url) {
+    return getImage(url).then(img => {
+      this.setState({ image: img });
+    });
+  },
+
   componentWillReceiveProps(nextProps) {
-    this.initSize(nextProps.size, () => {
+    Promise.all([this.initSize(nextProps.size), this.loadImage(nextProps.image)]).then(() => {
       this.redraw(nextProps);
     });
   },
@@ -62,7 +72,7 @@ export default React.createClass({
   },
 
   componentWillMount() {
-    this.initSize(this.props.size);
+    Promise.all([this.initSize(this.props.size), this.loadImage(this.props.image)]);
   },
 
   componentDidMount() {
@@ -252,7 +262,7 @@ export default React.createClass({
 
   render() {
     const image = this.props.image || {};
-    const img = [].slice.apply(document.images).find(i => this.props.image.url === i.src);
+    const img = this.state.image;
     const {canvasWidth, canvasHeight, isFocused, isEditing} = this.state;
     const {contrast, fontSize, text} = this.props;
     const {textRect, mouseHeld, textEditor} = this;
@@ -267,7 +277,7 @@ export default React.createClass({
 
     return <div className="ImageCanvas">
       <Canvas ref="canvas" width={canvasWidth} height={canvasHeight} onMouseDown={this.handleMouseDown} onMouseMove={this.handleMouseMove} onMouseUp={this.handleMouseUp}>
-        {img ?
+        { img ?
           <CanvasImage image={img} frame={mainFrame} /> :
           null}
         {contrast ?

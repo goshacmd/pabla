@@ -18,7 +18,7 @@ const App = React.createClass({
         <LeftSidebar />
         <div className="Main">
           <h4 className="Main-subtitle">Canvas</h4>
-          <ImageCanvas image={this.props.selected} text={this.props.text} fontSize={this.props.fontSize} contrast={this.props.contrast} size={this.props.size} onRedraw={this.updateDrawnImage} onTextChange={this.props.onTextChange} />
+          <ImageCanvas image={this.props.selected.url} text={this.props.text} fontSize={this.props.fontSize} contrast={this.props.contrast} size={this.props.size} onRedraw={this.updateDrawnImage} onTextChange={this.props.onTextChange} />
         </div>
         <RightSidebar />
       </div>

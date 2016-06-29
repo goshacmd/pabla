@@ -13,6 +13,9 @@ export default (name, drawFn) => {
     },
     unmountComponent() {
     },
+    componentWillMount() {
+      console.log('wr!');
+    },
     getNativeNode() {
       return drawFn(this._el.props);
     },
