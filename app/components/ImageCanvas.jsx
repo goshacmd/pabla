@@ -277,7 +277,7 @@ export default React.createClass({
 
     return <div className="ImageCanvas">
       <Canvas ref="canvas" width={canvasWidth} height={canvasHeight} onMouseDown={this.handleMouseDown} onMouseMove={this.handleMouseMove} onMouseUp={this.handleMouseUp}>
-        { img ?
+        {img ?
           <CanvasImage image={img} frame={mainFrame} /> :
           null}
         {contrast ?

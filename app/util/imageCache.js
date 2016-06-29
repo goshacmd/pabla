@@ -2,7 +2,7 @@ const _cache = {};
 
 const _get = (src) => {
   const img = new Image();
-  img.crossorigin = 'anonymous';
+  img.crossOrigin = 'anonymous';
   img.src = src;
 
   return new Promise((resolve, reject) => {
