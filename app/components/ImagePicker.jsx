@@ -17,9 +17,11 @@ export default React.createClass({
       {this.props.images.map(image => {
         const sel = image.url === selected.url;
         const className = 'ImagePicker-image' + (sel ? ' ImagePicker-image--selected' : '');
-        return <div className={className} onClick={() => this.handleSelect(image)} key={image.url}>
-          <div className="ImagePicker-image-wrapper"><img src={image.url + "&w=364"}/ ></div>
-        </div>
+        const imageUrl = image.url + "&w=364";
+
+        return <div className={className} onClick={this.handleSelect.bind(this, image)} key={image.url}>
+          <div className="ImagePicker-image-wrapper"><img src={imageUrl}/ ></div>
+        </div>;
       })}
     </div>;
   }

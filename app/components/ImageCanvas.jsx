@@ -55,6 +55,7 @@ export default React.createClass({
   },
 
   loadImage(url) {
+    if (!url) return Promise.resolve();
     return getImage(url).then(img => {
       this.setState({ image: img });
     });

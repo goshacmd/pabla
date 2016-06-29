@@ -27,3 +27,12 @@ export const cacheDrawing = (drawing) => ({
   type: 'CACHE_DRAWING',
   drawing
 });
+
+export const initialFetchImages = () => {
+  return dispatch => {
+    require('util/unsplash').getPopularImages().then(images => {
+      dispatch({ type: 'RECEIVE_IMAGES', images });
+      dispatch(selectImage(images[0]));
+    });
+  };
+};

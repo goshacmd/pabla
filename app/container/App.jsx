@@ -13,12 +13,21 @@ const App = React.createClass({
   },
 
   render() {
+    const selectedUrl = this.props.selected && this.props.selected.url;
+    const {text, fontSize, contrast, size} = this.props;
     return (
       <div className="Container">
         <LeftSidebar />
         <div className="Main">
           <h4 className="Main-subtitle">Canvas</h4>
-          <ImageCanvas image={this.props.selected.url} text={this.props.text} fontSize={this.props.fontSize} contrast={this.props.contrast} size={this.props.size} onRedraw={this.updateDrawnImage} onTextChange={this.props.onTextChange} />
+          <ImageCanvas
+            image={selectedUrl}
+            text={text}
+            fontSize={fontSize}
+            contrast={contrast}
+            size={size}
+            onRedraw={this.updateDrawnImage}
+            onTextChange={this.props.onTextChange} />
         </div>
         <RightSidebar />
       </div>
