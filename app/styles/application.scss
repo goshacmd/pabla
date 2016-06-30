@@ -100,21 +100,20 @@ body {
   border-radius: 3px;
 }
 
+.SearchBar {
+  padding: 4px 10px;
+  display: block;
+  width: 100%;
+  margin: 4px 0;
+  border: none;
+  font-size: 13px;
+  outline: none;
+  margin-top: -4px;
+}
+
 .ImagePicker {
   overflow-y: scroll;
-  height: calc(100vh - 74px);
-  margin-top: -8px;
-
-  &-search {
-    padding: 4px 8px;
-    appearance: none;
-    display: block;
-    width: 100%;
-    margin: 4px 0;
-    border: none;
-    font-size: 13px;
-    outline: none;
-  }
+  height: calc(100vh - 74px - 32px);
 
   &-image {
     cursor: pointer;

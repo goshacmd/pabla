@@ -30,6 +30,11 @@ export const cacheDrawing = (drawing) => ({
   drawing
 });
 
+export const setQuery = (query) => ({
+  type: 'SET_QUERY',
+  query
+});
+
 
 export const initialFetchImages = () => {
   return dispatch => {
