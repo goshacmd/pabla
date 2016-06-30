@@ -77,8 +77,8 @@ export default React.createClass({
   },
 
   componentDidMount() {
-    document.addEventListener('keypress', this.handleKeyUp);
-    document.addEventListener('keydown', this.handleKeyDown);
+    //document.addEventListener('keypress', this.handleKeyUp);
+    //document.addEventListener('keydown', this.handleKeyDown);
     this.textRect = [20, 20, this.state.canvasWidth - 40, this.state.canvasHeight - 40];
     window.requestAnimationFrame(this.doRedraw);
 
@@ -205,10 +205,29 @@ export default React.createClass({
         let idx2 = findIdxForCursor(ctx, textRect, cursor2, fontSize, text);
         this.textEditor.cursor1 = idx1;
         this.textEditor.cursor2 = idx2;
+
+        this.refs.txt.setSelectionRange(idx1, idx2 - 1)
       }
 
       setTimeout(this.doRedraw, 50);
     }
+  },
+
+  updateCursor() {
+    const {selectionStart, selectionEnd} = this.refs.txt;
+    const {textEditor} = this;
+
+    if (selectionStart === selectionEnd) {
+      textEditor.cursor = selectionStart;
+      textEditor.cursor1 = null;
+      textEditor.cursor2 = null;
+    } else {
+      textEditor.cursor = null;
+      textEditor.cursor1 = selectionStart;
+      textEditor.cursor2 = selectionEnd + 1;
+    }
+
+    setTimeout(this.doRedraw, 50);
   },
 
   handleMouseUp(e) {
@@ -220,6 +239,8 @@ export default React.createClass({
         const {text, fontSize} = this.props;
         this.textEditor.cursor = findIdxForCursor(ctx, textRect, this.startPos, fontSize, text) || this.textEditor.cursor;
         this.setState({ isEditing: true });
+        this.refs.txt.focus();
+        this.refs.txt.setSelectionRange(this.textEditor.cursor, this.textEditor.cursor);
         this.textEditor.cursor1 = null;
         this.textEditor.cursor2 = null;
 
@@ -277,7 +298,13 @@ export default React.createClass({
     const cursorCoords = this.getCursorCoords(selectionRectFrames);
 
     return <div className="ImageCanvas">
-      <Canvas ref="canvas" width={canvasWidth} height={canvasHeight} onMouseDown={this.handleMouseDown} onMouseMove={this.handleMouseMove} onMouseUp={this.handleMouseUp}>
+      <Canvas
+        ref="canvas"
+        width={canvasWidth}
+        height={canvasHeight}
+        onMouseDown={this.handleMouseDown}
+        onMouseMove={this.handleMouseMove}
+        onMouseUp={this.handleMouseUp}>
         {img ?
           <CanvasImage image={img} frame={mainFrame} /> :
           null}
@@ -294,7 +321,9 @@ export default React.createClass({
           <CanvasLine color="rgba(255, 255, 255, 0.75)" width={1} from={[cursorCoords.x, cursorCoords.y1]} to={[cursorCoords.x, cursorCoords.y2]} /> :
           null}
         {selectionRects}
-      </Canvas>
+        </Canvas>
+
+      <textarea ref='txt' value={text} onChange={e => this.props.onTextChange(e.target.value)} onKeyUp={this.updateCursor} style={{height: 1, width: 1, opacity: 0}} />
     </div>
   }
 });

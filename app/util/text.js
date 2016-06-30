@@ -60,7 +60,7 @@ export const findIdxForCursor = (ctx, textRect, cursorAt, fontSize, text) => {
       });
     }
   });
-  return cursor;
+  return cursor !== undefined ? cursor + 1 : null;
 };
 
 export const coordsForLine = (textRect, fontSize, lineNo) => {
@@ -72,11 +72,11 @@ export const findPosForCursor = (ctx, cursor, fontSize, text) => {
   const maxWidth = MAX_TEXT_WIDTH;
   const [lines, mapIndices] = splitTextInLines(ctx, maxWidth, fontSize, text);
 
-  const line = mapIndices.find(line => line.indexOf(cursor+1) !== -1);
+  const line = mapIndices.find(line => line.indexOf(cursor) !== -1);
   let pos;
   if (line) {
     const lineNo = mapIndices.indexOf(line);
-    const idxInLine = line.indexOf(cursor+1);
+    const idxInLine = line.indexOf(cursor);
     const lineText = line.map(i => text[i-1]).join('');
 
     pos = {lineNo, idxInLine, line};
