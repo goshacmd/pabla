@@ -201,7 +201,7 @@ export default React.createClass({
     const {textEditor, textRect} = this;
     const {cursor1, cursor2} = textEditor;
 
-    if (this.state.isEditing && cursor1 && cursor2) {
+    if (this.state.isEditing && cursor1 >= 0 && cursor2 >= 0) {
       const {fontSize, text} = this.props;
       const rects = findRectsForSelection(_ctx, textRect, cursor1, cursor2, fontSize, text);
       if (rects) {

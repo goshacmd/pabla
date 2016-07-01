@@ -72,6 +72,10 @@ export const findPosForCursor = (ctx, cursor, fontSize, text) => {
   const maxWidth = MAX_TEXT_WIDTH;
   const [lines, mapIndices] = splitTextInLines(ctx, maxWidth, fontSize, text);
 
+  if (cursor === 0) {
+    return {lineNo: 0, idxInLine: 0, line: ['']};
+  };
+
   const line = mapIndices.find(line => line.indexOf(cursor) !== -1);
   let pos;
   if (line) {
@@ -110,8 +114,8 @@ export const findRectsForSelection = (ctx, textRect, cursor1, cursor2, fontSize,
     const line = mapIndices.find(line => line.indexOf(idx1+1) !== -1);
     const lineText = line.map(i => text[i-1]).join('');
     const {x, y} = coordsForLine(textRect, fontSize, pos1.lineNo);
-    const wd1 = ctx.measureText(lineText.slice(0, pos1.idxInLine + 1)).width;
-    const wd2 = ctx.measureText(lineText.slice(pos1.idxInLine + 1, pos2.idxInLine)).width;
+    const wd1 = ctx.measureText(lineText.slice(0, pos1.idxInLine)).width;
+    const wd2 = ctx.measureText(lineText.slice(pos1.idxInLine, pos2.idxInLine)).width;
 
     return [{x1:x+wd1, x2:x+wd1+wd2, y1: y-fontSize+7, y2:y+7 }];
   } else {
@@ -124,16 +128,18 @@ export const findRectsForSelection = (ctx, textRect, cursor1, cursor2, fontSize,
       if (lineNo == pos1.lineNo) {
         const line = mapIndices.find(line => line.indexOf(idx1+1) !== -1);
         const lineText = line.map(i => text[i-1]).join('');
-        wd1 = ctx.measureText(lineText.slice(0, pos1.idxInLine +1)).width;
-        wd2 = ctx.measureText(lineText.slice(pos1.idxInLine + 1)).width;
+        wd1 = ctx.measureText(lineText.slice(0, pos1.idxInLine)).width;
+        wd2 = ctx.measureText(lineText.slice(pos1.idxInLine)).width;
       } else if (lineNo === pos2.lineNo) {
-        const line = mapIndices.find(line => line.indexOf(idx2+1) !== -1);
+        const line = mapIndices.find(line => line.indexOf(idx2) !== -1);
         const lineText = line.map(i => text[i-1]).join('');
         wd1 = 0;
         wd2 = ctx.measureText(lineText.slice(0, pos2.idxInLine)).width;
       } else {
+        const line = mapIndices[lineNo];
+        const lineText = line.map(i => text[i-1]).join('');
         wd1 = 0
-        wd2 = 280;
+        wd2 = ctx.measureText(lineText).width;
       }
       return {x1:x+wd1, x2:x+wd1+wd2, y1: y-fontSize+7, y2:y+7 };
     });
