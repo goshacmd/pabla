@@ -8,6 +8,12 @@ import TextEditor from 'util/textEditor';
 
 const _ctx = document.createElement('canvas').getContext('2d');
 
+const makeBlue = (alpha) => `rgba(87, 205, 255, ${alpha})`;
+
+const rectCenter = ([x, y, w, h]) => {
+  return { x: x + w/2, y: y + h/2 };
+};
+
 const keys = {
   8:  'backspace',
   27: 'escape',
@@ -253,10 +259,36 @@ export default React.createClass({
   getSnapFrames() {
     const [x, y, w, h] = this.state.textRect;
     const size = 15;
-    const left = [x - size/2, y + h/2 - size/2, size, size];
-    const right = [x + w - size/2, y + h/2 - size/2, size, size];
+    const {y: yCenter} = rectCenter([x, y, w, h]);
+    const left = [x - size/2, yCenter - size/2, size, size];
+    const right = [x + w - size/2, yCenter - size/2, size, size];
 
     return {left, right};
+  },
+
+  getGuidePoints() {
+    const {canvasWidth, canvasHeight} = this.state;
+
+    const horizontal = [[0, canvasHeight / 2], [canvasWidth, canvasHeight / 2]];
+    const vertical = [[canvasWidth / 2, 0], [canvasWidth / 2, canvasHeight]];
+
+    return {horizontal, vertical};
+  },
+
+  closeToGuides() {
+    const {canvasWidth, canvasHeight, isFocused} = this.state;
+
+    if (!isFocused) return { horizontal: false, vertical: false };
+
+    const {x: xCenter, y: yCenter} = rectCenter(this.state.textRect);
+
+    const xDiff = canvasWidth/2 - xCenter;
+    const yDiff = canvasHeight/2 - yCenter;
+
+    return {
+      horizontal: yDiff >= -1 && yDiff <= 1,
+      vertical: xDiff >= -1 && xDiff <= 1,
+    };
   },
 
   render() {
@@ -268,10 +300,12 @@ export default React.createClass({
 
     const selectionRectFrames = this.getSelectionRects();
     const selectionRects = selectionRectFrames.map((frame, i) => {
-      return <CanvasRect key={i} fill="rgba(87, 205, 255, 0.5)" frame={frame} />
+      return <CanvasRect key={i} fill={makeBlue(0.5)} frame={frame} />
     });
 
     const {left: leftSnapFrame, right: rightSnapFrame} = this.getSnapFrames();
+    const {horizontal: horizontalGuidePoints, vertical: verticalGuidePoints} = this.getGuidePoints();
+    const {horizontal: showHorizontalGuide, vertical: showVerticalGuide} = this.closeToGuides();
 
     const cursorCoords = this.getCursorCoords(selectionRectFrames);
 
@@ -279,7 +313,7 @@ export default React.createClass({
       this.setState({ textRect: newRect });
     };
 
-    const outlineColor = mouseHeld ? 'rgba(87, 205, 255, 0.5)' : '#0092d1';
+    const outlineColor = mouseHeld ? makeBlue(0.5) : '#0092d1';
 
     return <div className="ImageCanvas">
       <Canvas
@@ -294,6 +328,12 @@ export default React.createClass({
           <CanvasImage image={img} frame={mainFrame} /> :
           null}
         <CanvasFilter filter={filter} frame={mainFrame} />
+        {showHorizontalGuide ?
+          <CanvasLine color={makeBlue(0.85)} width={2} from={horizontalGuidePoints[0]} to={horizontalGuidePoints[1]} /> :
+          null}
+        {showVerticalGuide ?
+          <CanvasLine color={makeBlue(0.85)} width={2} from={verticalGuidePoints[0]} to={verticalGuidePoints[1]} /> :
+          null}
         {textRect && isFocused ? <CanvasRect frame={leftSnapFrame} fill={outlineColor} /> : null}
         {textRect && isFocused ? <CanvasRect frame={rightSnapFrame} fill={outlineColor} /> : null}
         {textRect ?
