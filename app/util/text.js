@@ -1,3 +1,6 @@
+const BOX_MARGIN = 10;
+const BOX_TOTAL_MARGIN = 2 * BOX_MARGIN;
+
 const setupCtx = (ctx, textAttrs) => {
   const {bold, italic, font, fontSize, color} = textAttrs;
 
@@ -7,6 +10,8 @@ const setupCtx = (ctx, textAttrs) => {
 
 export const splitTextInLines = (ctx, maxWidth, textAttrs, text) => {
   const {fontSize} = textAttrs;
+
+  maxWidth = maxWidth - BOX_TOTAL_MARGIN;
 
   setupCtx(ctx, textAttrs);
 
@@ -44,16 +49,16 @@ export const splitTextInLines = (ctx, maxWidth, textAttrs, text) => {
 };
 
 export const findIdxForCursor = (ctx, textRect, cursorAt, textAttrs, text) => {
-  const {fontSize} = textAttrs;
+  const {fontSize, lineHeight} = textAttrs;
 
   setupCtx(ctx, textAttrs);
 
   const maxWidth = textRect[2];
   const [lines, mapIndices] = splitTextInLines(ctx, maxWidth, textAttrs, text);
-  const spaced = fontSize * 1.3;
+  const spaced = fontSize * lineHeight;
   let cursor;
   lines.forEach((line, idx) => {
-    const x = textRect[0] + 10;
+    const x = textRect[0] + BOX_MARGIN;
     const y = textRect[1] + fontSize + (idx * spaced);
     // find cursor
     if (cursorAt && cursorAt.y <= y && cursorAt.y >= y - spaced) {
@@ -71,10 +76,10 @@ export const findIdxForCursor = (ctx, textRect, cursorAt, textAttrs, text) => {
 };
 
 export const coordsForLine = (textRect, textAttrs, lineNo) => {
-  const {fontSize} = textAttrs;
+  const {fontSize, lineHeight} = textAttrs;
 
-  const spaced = fontSize * 1.3;
-  return { x: textRect[0] + 10, y: textRect[1] + fontSize + (lineNo * spaced) };
+  const spaced = fontSize * lineHeight;
+  return { x: textRect[0] + BOX_MARGIN, y: textRect[1] + fontSize + (lineNo * spaced) };
 };
 
 export const findPosForCursor = (ctx, cursor, textRect, textAttrs, text) => {
@@ -166,7 +171,7 @@ export const findRectsForSelection = (ctx, textRect, cursor1, cursor2, textAttrs
 };
 
 export const addText = (ctx, textAttrs, _textRect, text) => {
-  const {fontSize} = textAttrs;
+  const {fontSize, lineHeight} = textAttrs;
   setupCtx(ctx, textAttrs);
 
   const textRect = _textRect.slice();
@@ -174,15 +179,15 @@ export const addText = (ctx, textAttrs, _textRect, text) => {
   const maxWidth = _textRect[2];
   const [lines, mapIndices] = splitTextInLines(ctx, maxWidth, textAttrs, text);
 
-  const spaced = fontSize * 1.3;
+  const spaced = fontSize * lineHeight;
   lines.forEach((line, idx) => {
     const {x, y} = coordsForLine(textRect, textAttrs, idx);
-    ctx.fillText(line, x, y, textRect[2]-20);
+    ctx.fillText(line, x, y, textRect[2]-BOX_TOTAL_MARGIN);
   });
 
   const totalHeight = lines.length * spaced;
 
-  textRect[3] = totalHeight + 10;
+  textRect[3] = totalHeight + BOX_MARGIN;
 
   return textRect;
 };

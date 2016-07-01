@@ -15,7 +15,8 @@ const initialState = {
     color: 'white',
     font: 'Georgia',
     bold: false,
-    italic: false
+    italic: false,
+    lineHeight: 1.35
   }
 };
 
