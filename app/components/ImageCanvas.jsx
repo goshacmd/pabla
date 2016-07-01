@@ -268,7 +268,6 @@ export default React.createClass({
         onChange={e => this.props.onTextChange(e.target.value)}
         onKeyUp={this.updateCursor}
         onFocus={this.setEditing}
-        onBlur={this.setNoFocus}
         style={{height: 1, width: 1, opacity: 0}} />
     </div>
   }
