@@ -1,6 +1,3 @@
-const CANVAS_WIDTH = 500;
-const MAX_TEXT_WIDTH = CANVAS_WIDTH - 40 - 10;
-
 const setupCtx = (ctx, textAttrs) => {
   const {bold, italic, font, fontSize, color} = textAttrs;
 
@@ -51,7 +48,7 @@ export const findIdxForCursor = (ctx, textRect, cursorAt, textAttrs, text) => {
 
   setupCtx(ctx, textAttrs);
 
-  const maxWidth = MAX_TEXT_WIDTH;
+  const maxWidth = textRect[2];
   const [lines, mapIndices] = splitTextInLines(ctx, maxWidth, textAttrs, text);
   const spaced = fontSize * 1.3;
   let cursor;
@@ -80,12 +77,12 @@ export const coordsForLine = (textRect, textAttrs, lineNo) => {
   return { x: textRect[0] + 10, y: textRect[1] + fontSize + (lineNo * spaced) };
 };
 
-export const findPosForCursor = (ctx, cursor, textAttrs, text) => {
+export const findPosForCursor = (ctx, cursor, textRect, textAttrs, text) => {
   const {fontSize} = textAttrs;
 
   setupCtx(ctx, textAttrs);
 
-  const maxWidth = MAX_TEXT_WIDTH;
+  const maxWidth = textRect[2];
   const [lines, mapIndices] = splitTextInLines(ctx, maxWidth, fontSize, text);
 
   if (cursor === 0) {
@@ -126,11 +123,11 @@ export const findRectsForSelection = (ctx, textRect, cursor1, cursor2, textAttrs
   if (idx1 > idx2) {
     [idx1, idx2] = [idx2, idx1];
   }
-  const pos1 = findPosForCursor(ctx, idx1, textAttrs, text);
-  const pos2 = findPosForCursor(ctx, idx2, textAttrs, text);
+  const pos1 = findPosForCursor(ctx, idx1, textRect, textAttrs, text);
+  const pos2 = findPosForCursor(ctx, idx2, textRect, textAttrs, text);
 
   if (!(pos1 && pos2)) return;
-  const [lines, mapIndices] = splitTextInLines(ctx, MAX_TEXT_WIDTH, textAttrs, text);
+  const [lines, mapIndices] = splitTextInLines(ctx, textRect[2], textAttrs, text);
 
   if (pos1.lineNo === pos2.lineNo) {
     const line = mapIndices.find(line => line.indexOf(idx1+1) !== -1);
@@ -174,7 +171,7 @@ export const addText = (ctx, textAttrs, _textRect, text) => {
 
   const textRect = _textRect.slice();
 
-  const maxWidth = MAX_TEXT_WIDTH;
+  const maxWidth = _textRect[2];
   const [lines, mapIndices] = splitTextInLines(ctx, maxWidth, textAttrs, text);
 
   const spaced = fontSize * 1.3;
