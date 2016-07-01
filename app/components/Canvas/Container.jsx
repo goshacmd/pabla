@@ -82,9 +82,9 @@ export default React.createClass({
 
   _passRendered() {
     const cb = this.props.onRedraw;
-    if (!cb) return;
-
     const canvas = this.refs.canvas;
+    if (!cb || !canvas) return;
+
     const data = canvas.toDataURL('image/jpeg');
     cb(data);
   }

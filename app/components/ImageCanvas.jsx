@@ -1,5 +1,6 @@
 import React from 'react';
 import {Canvas, CanvasRect, CanvasFilter, CanvasImage, CanvasText, CanvasOutline, CanvasLine} from './Canvas';
+import Spinner from './Spinner';
 
 import {getImage} from 'util/imageCache';
 
@@ -293,6 +294,12 @@ export default React.createClass({
 
   render() {
     const img = this.state.image;
+    if (!img) {
+      return <div className="ImageCanvas">
+        <Spinner />
+      </div>;
+    }
+
     const {canvasWidth, canvasHeight, isFocused, isEditing, textRect} = this.state;
     const {filter, textAttrs, text} = this.props;
     const {mouseHeld, textEditor} = this;
