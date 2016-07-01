@@ -5,6 +5,7 @@ import ReactMultiChild from 'react/lib/ReactMultiChild';
 import ReactInstanceMap from 'react/lib/ReactInstanceMap';
 
 import {renderCanvasLayout} from 'util/canvas';
+import debounce from 'util/debounce';
 
 const Container = Object.assign({}, ReactMultiChild.Mixin, {
   mountAndInjectChildren(children, tx, ct) {
@@ -30,6 +31,10 @@ export default React.createClass({
 
   scaleCanvas() {
     this.refs.canvas.getContext('2d').scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
+  },
+
+  componentWillMount() {
+    this.passRendered = debounce(this._passRendered, 500);
   },
 
   componentDidMount() {
@@ -72,6 +77,15 @@ export default React.createClass({
 
     renderCanvasLayout(ctx, layout);
 
-    this.props.onRedraw && this.props.onRedraw(canvas.toDataURL('image/jpeg'));
+    this.passRendered();
+  },
+
+  _passRendered() {
+    const cb = this.props.onRedraw;
+    if (!cb) return;
+
+    const canvas = this.refs.canvas;
+    const data = canvas.toDataURL('image/jpeg');
+    cb(data);
   }
 });

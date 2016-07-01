@@ -84,6 +84,8 @@ export const renderCanvasLayout = (ctx, layout) => {
     if (!child) return;
     const renderer = canvasComponents[child.type];
     if (!renderer) console.error(`Unknown canvas component: ${child.type}`);
+    ctx.save();
     renderer(ctx, child);
+    ctx.restore();
   });
 };
