@@ -5,9 +5,9 @@ export const setFontSize = (size) => ({
   size
 });
 
-export const setContrast = (contrast) => ({
-  type: 'SET_CONTRAST',
-  contrast
+export const setFilter = (filter) => ({
+  type: 'SET_FILTER',
+  filter
 });
 
 export const selectImage = (image) => ({

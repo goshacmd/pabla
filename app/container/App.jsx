@@ -14,7 +14,7 @@ const App = React.createClass({
 
   render() {
     const selectedUrl = this.props.selected && this.props.selected.url;
-    const {text, fontSize, contrast, size} = this.props;
+    const {text, fontSize, filter, size} = this.props;
     return (
       <div className="Container">
         <LeftSidebar />
@@ -24,7 +24,7 @@ const App = React.createClass({
             image={selectedUrl}
             text={text}
             fontSize={fontSize}
-            contrast={contrast}
+            filter={filter}
             size={size}
             onRedraw={this.updateDrawnImage}
             onTextChange={this.props.onTextChange} />
@@ -37,7 +37,7 @@ const App = React.createClass({
 
 const mapStateToProps = (state) => ({
   fontSize: state.fontSize,
-  contrast: state.contrast,
+  filter: state.filter,
   size: state.size,
   selected: state.selectedImage,
   drawing: state.drawing,

@@ -4,7 +4,7 @@ const images = getPopularImages();
 
 const initialState = {
   fontSize: 32,
-  contrast: true,
+  filter: 'light_contrast',
   availableImages: [],
   selectedImage: null,
   query: "",
@@ -17,8 +17,8 @@ export default function(state = initialState, action) {
   switch (action.type) {
     case 'SET_FONT_SIZE':
       return Object.assign({}, state, { fontSize: action.size });
-    case 'SET_CONTRAST':
-      return Object.assign({}, state, { contrast: action.contrast });
+    case 'SET_FILTER':
+      return Object.assign({}, state, { filter: action.filter });
     case 'SELECT_IMAGE':
       return Object.assign({}, state, { selectedImage: action.image });
     case 'SET_SIZE':

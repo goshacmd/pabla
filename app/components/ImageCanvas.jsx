@@ -231,7 +231,7 @@ export default React.createClass({
   render() {
     const img = this.state.image;
     const {canvasWidth, canvasHeight, isFocused, isEditing} = this.state;
-    const {contrast, fontSize, text} = this.props;
+    const {filter, fontSize, text} = this.props;
     const {textRect, mouseHeld, textEditor} = this;
     const mainFrame = [0, 0, canvasWidth, canvasHeight];
 
@@ -254,9 +254,7 @@ export default React.createClass({
         {img ?
           <CanvasImage image={img} frame={mainFrame} /> :
           null}
-        {contrast ?
-          <CanvasFilter frame={mainFrame} /> :
-          null}
+        <CanvasFilter filter={filter} frame={mainFrame} />
         {textRect ?
           <CanvasText ref="textRect" text={text} frame={textRect} fontSize={fontSize} onUpdateRect={newRect => this.textRect = newRect} /> :
           null}

@@ -2,20 +2,22 @@ import React from 'react';
 
 export default React.createClass({
   propTypes: {
-    contrast: React.PropTypes.bool.isRequired,
-    onContrastChange: React.PropTypes.func.isRequired
+    filter: React.PropTypes.oneOf(['none', 'light_contrast', 'heavy_contrast']).isRequired,
+    onFilterChange: React.PropTypes.func.isRequired
   },
 
-  updateContrast() {
-    const val = this.refs.contrast.checked;
-    this.props.onContrastChange(val);
+  updateFilter() {
+    const val = this.refs.select.value;
+    this.props.onFilterChange(val);
   },
 
   render() {
     return <div>
-      <label>
-        <input ref="contrast" checked={this.props.contrast} type="checkbox" onChange={this.updateContrast} /> Contrast
-      </label>
+      <select className="FiltersPicker" value={this.props.filter} ref="select" onChange={this.updateFilter}>
+        <option value="none">None</option>
+        <option value="light_contrast">Light contrast</option>
+        <option value="heavy_contrast">Heavy contrast</option>
+      </select>
     </div>;
   }
 });

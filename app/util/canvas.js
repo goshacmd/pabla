@@ -5,7 +5,10 @@ const canvasComponents = {
     drawImage(ctx, child.frame, child.image);
   },
   filter(ctx, child) {
-    applyContrast(ctx, child.frame);
+    const {filter} = child;
+    if (filter === 'none') return;
+    const value = filter === 'light_contrast' ? 0.35 : 0.65;
+    applyContrast(ctx, child.frame, value);
   },
   text(ctx, child) {
     const rect = addText(ctx, child.fontSize, child.frame, child.text);
@@ -32,8 +35,8 @@ const canvasComponents = {
   }
 };
 
-const applyContrast = (ctx, frame) => {
-  ctx.fillStyle = "rgba(45, 45, 45, 0.45)";
+const applyContrast = (ctx, frame, value) => {
+  ctx.fillStyle = `rgba(45, 45, 45, ${value})`;
   ctx.fillRect(...frame);
 };
 
