@@ -95,7 +95,6 @@ export default React.createClass({
 
   redraw(nextProps) {
     if (!nextProps) nextProps = this.props;
-
     this.forceUpdate();
   },
 
@@ -142,14 +141,10 @@ export default React.createClass({
   },
 
   handleMouseMove(e) {
+    // move
     if (this.mouseHeld) {
-      // move
-
-      const canvas = this.refs.canvas.refs.canvas;
-      const ctx = canvas.getContext('2d');
-
       const {startPos} = this;
-      const mousePos = getMousePos(e, canvas);
+      const mousePos = getMousePos(e, this.refs.canvas.refs.canvas);
 
       const mouseDiff = {
         x: startPos.x - mousePos.x,
@@ -160,7 +155,7 @@ export default React.createClass({
 
       if (isFocused && !isEditing) {
         this.textRect = applyMouseDiff(this.textRect, mouseDiff);
-        this.setState({ mouseDiff });
+        this.mouseDiff = mouseDiff;
         this.startPos = mousePos;
       } else if (isFocused && isEditing) {
         const cursor1 = startPos;
@@ -168,8 +163,8 @@ export default React.createClass({
 
         const {textRect} = this;
         const {text, fontSize} = this.props;
-        let idx1 = findIdxForCursor(ctx, textRect, cursor1, fontSize, text);
-        let idx2 = findIdxForCursor(ctx, textRect, cursor2, fontSize, text);
+        let idx1 = findIdxForCursor(_ctx, textRect, cursor1, fontSize, text);
+        let idx2 = findIdxForCursor(_ctx, textRect, cursor2, fontSize, text);
         this.textEditor.setSelection(idx1, idx2, this.refs.txt);
       }
 
@@ -178,23 +173,21 @@ export default React.createClass({
   },
 
   handleMouseUp(e) {
-    const canvas = this.refs.canvas.refs.canvas;
-    const ctx = canvas.getContext('2d');
-
     if (this.mouseDown) {
       if ((new Date - this.mouseDown) < 200) {
         const {textRect, startPos} = this;
         const {text, fontSize} = this.props;
-        const cursor = findIdxForCursor(ctx, textRect, startPos, fontSize, text);
+        const cursor = findIdxForCursor(_ctx, textRect, startPos, fontSize, text);
         this.textEditor.setCursor(cursor, this.refs.txt);
         this.setState({ isEditing: true });
         this.refs.txt.focus();
       }
     }
 
-    this.setState({ mouseDiff: null });
+    this.mouseDiff = null;
     this.mouseDown = null;
     this.mouseHeld = false;
+    setTimeout(this.doRedraw, 0);
   },
 
   getSelectionRects() {
