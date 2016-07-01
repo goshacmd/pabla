@@ -19,6 +19,7 @@ const Container = Object.assign({}, ReactMultiChild.Mixin, {
 
 export default React.createClass({
   mixins: [Container],
+
   render() {
     const {width, height} = this.props;
     const {onMouseDown, onMouseMove, onMouseUp} = this.props
@@ -26,6 +27,7 @@ export default React.createClass({
     const scale = window.devicePixelRatio || 1;
     return <canvas ref="canvas" width={width*scale} height={height*scale} style={style} {...{onMouseDown, onMouseMove, onMouseUp}} />
   },
+
   componentDidMount() {
     this._debugID = this._reactInternalInstance._debugID;
 
@@ -59,10 +61,13 @@ export default React.createClass({
       children: layoutChildren
     };
 
-    const ctx = this.refs.canvas.getContext('2d');
+    const canvas = this.refs.canvas;
+    const ctx = canvas.getContext('2d');
     const {width, height} = this.props;
     ctx.clearRect(0, 0, width, height);
 
     renderCanvasLayout(ctx, layout);
+
+    this.props.onRedraw && this.props.onRedraw(canvas.toDataURL('image/jpeg'));
   }
 });

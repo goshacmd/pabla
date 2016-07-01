@@ -56,6 +56,7 @@ export default React.createClass({
 
   loadImage(url) {
     if (!url) return Promise.resolve();
+    if (this.props.image !== url) this.setState({ image: null });
     return getImage(url).then(img => {
       this.setState({ image: img });
     });
@@ -77,8 +78,6 @@ export default React.createClass({
   },
 
   componentDidMount() {
-    //document.addEventListener('keypress', this.handleKeyUp);
-    //document.addEventListener('keydown', this.handleKeyDown);
     this.textRect = [20, 20, this.state.canvasWidth - 40, this.state.canvasHeight - 40];
     window.requestAnimationFrame(this.doRedraw);
 
@@ -98,63 +97,30 @@ export default React.createClass({
     if (!nextProps) nextProps = this.props;
 
     this.forceUpdate();
-    this.props.onRedraw && this.props.onRedraw(this.refs.canvas.refs.canvas.toDataURL('image/jpeg'));
   },
 
   cancelEditing() {
     this.setState({ isEditing: false });
-    setTimeout(this.doRedraw, 50);
   },
 
-  moveCursor(dir, shift) {
-    this.textEditor.moveCursor(dir, shift);
-    setTimeout(this.doRedraw, 50);
-  },
-
-  insertOrDeleteChar(char) {
-    const newText = this.textEditor.insertOrDeleteChar(char);
-    this.props.onTextChange(newText);
-  },
-
-  selectAll() {
-    this.textEditor.selectAll();
-    setTimeout(this.doRedraw, 150);
-  },
-
-  handleKeyDown(e) {
-    if (this.state.isEditing) {
-      if (e.which === 65 && e.metaKey === true) {
-        e.preventDefault();
-        return this.selectAll();
-      }
-
-      switch (keys[e.which]) {
-        case 'escape':
-          this.cancelEditing();
-          break;
-        case 'arr_left':
-          this.moveCursor('left', e.shiftKey);
-          break;
-        case 'arr_right':
-          this.moveCursor('right', e.shiftKey);
-          break;
-      }
+  updateCursor(e) {
+    if (keys[e.which] === 'escape') {
+      this.cancelEditing();
+      e.target.blur();
     }
+
+    const {selectionStart, selectionEnd} = this.refs.txt;
+    this.textEditor.setFromInput(selectionStart, selectionEnd);
+
+    setTimeout(this.doRedraw, 0);
   },
 
-  handleKeyUp(e) {
-    if (e.keyIdentifier === 'Meta' || e.keyIdentifier === 'Alt' || e.keyIdentifier === 'Control') return;
+  setFocus() {
+    this.setState({ isFocused: true });
+  },
 
-    if (this.state.isEditing) {
-      if (keys[e.which] === 'backspace') {
-        this.insertOrDeleteChar();
-      } else {
-        let char = String.fromCharCode(e.charCode);
-        if (!e.shiftKey) char = char.toLowerCase();
-        if (e.keyCode === 13) char = '\n';
-        this.insertOrDeleteChar(char);
-      }
-    }
+  setNoFocus() {
+    this.setState({ isFocused: false, isEditing: false });
   },
 
   handleMouseDown(e) {
@@ -169,11 +135,9 @@ export default React.createClass({
       if (this.state.isFocused) {
         this.mouseDown = new Date;
       }
-      this.setState({ isFocused: true });
-      setTimeout(this.doRedraw, 100);
+      this.setFocus();
     } else {
-      this.setState({ isFocused: false, isEditing: false });
-      setTimeout(this.doRedraw, 100);
+      this.setNoFocus();
     }
   },
 
@@ -181,84 +145,65 @@ export default React.createClass({
     if (this.mouseHeld) {
       // move
 
-      const mousePos = getMousePos(e, this.refs.canvas.refs.canvas);
+      const canvas = this.refs.canvas.refs.canvas;
+      const ctx = canvas.getContext('2d');
+
+      const {startPos} = this;
+      const mousePos = getMousePos(e, canvas);
 
       const mouseDiff = {
-        x: this.startPos.x - mousePos.x,
-        y: this.startPos.y - mousePos.y
+        x: startPos.x - mousePos.x,
+        y: startPos.y - mousePos.y
       };
 
-      if (this.state.isFocused && !this.state.isEditing) {
+      const {isFocused, isEditing} = this.state;
+
+      if (isFocused && !isEditing) {
         this.textRect = applyMouseDiff(this.textRect, mouseDiff);
         this.setState({ mouseDiff });
         this.startPos = mousePos;
-      } else if (this.state.isFocused && this.state.isEditing) {
-        const cursor1 = this.startPos;
+      } else if (isFocused && isEditing) {
+        const cursor1 = startPos;
         const cursor2 = mousePos;
 
-
-        const canvas = this.refs.canvas.refs.canvas;
-        const ctx = canvas.getContext('2d');
         const {textRect} = this;
         const {text, fontSize} = this.props;
         let idx1 = findIdxForCursor(ctx, textRect, cursor1, fontSize, text);
         let idx2 = findIdxForCursor(ctx, textRect, cursor2, fontSize, text);
-        this.textEditor.cursor1 = idx1;
-        this.textEditor.cursor2 = idx2;
-
-        this.refs.txt.setSelectionRange(idx1, idx2 - 1)
+        this.textEditor.setSelection(idx1, idx2, this.refs.txt);
       }
 
-      setTimeout(this.doRedraw, 50);
+      setTimeout(this.doRedraw, 0);
     }
-  },
-
-  updateCursor() {
-    const {selectionStart, selectionEnd} = this.refs.txt;
-    const {textEditor} = this;
-
-    if (selectionStart === selectionEnd) {
-      textEditor.cursor = selectionStart;
-      textEditor.cursor1 = null;
-      textEditor.cursor2 = null;
-    } else {
-      textEditor.cursor = null;
-      textEditor.cursor1 = selectionStart;
-      textEditor.cursor2 = selectionEnd + 1;
-    }
-
-    setTimeout(this.doRedraw, 50);
   },
 
   handleMouseUp(e) {
+    const canvas = this.refs.canvas.refs.canvas;
+    const ctx = canvas.getContext('2d');
+
     if (this.mouseDown) {
       if ((new Date - this.mouseDown) < 200) {
-        const canvas = this.refs.canvas.refs.canvas;
-        const ctx = canvas.getContext('2d');
-        const {textRect} = this;
+        const {textRect, startPos} = this;
         const {text, fontSize} = this.props;
-        this.textEditor.cursor = findIdxForCursor(ctx, textRect, this.startPos, fontSize, text) || this.textEditor.cursor;
+        const cursor = findIdxForCursor(ctx, textRect, startPos, fontSize, text);
+        this.textEditor.setCursor(cursor, this.refs.txt);
         this.setState({ isEditing: true });
         this.refs.txt.focus();
-        this.refs.txt.setSelectionRange(this.textEditor.cursor, this.textEditor.cursor);
-        this.textEditor.cursor1 = null;
-        this.textEditor.cursor2 = null;
-
-        setTimeout(this.doRedraw, 50);
       }
     }
+
     this.setState({ mouseDiff: null });
     this.mouseDown = null;
     this.mouseHeld = false;
-    setTimeout(this.doRedraw, 50);
   },
 
   getSelectionRects() {
-    const {textEditor} = this;
+    const {textEditor, textRect} = this;
+    const {cursor1, cursor2} = textEditor;
 
-    if (this.state.isEditing && textEditor.cursor1 && textEditor.cursor2) {
+    if (this.state.isEditing && cursor1 && cursor2) {
       const {fontSize, text} = this.props;
-      const rects = findRectsForSelection(_ctx, this.textRect, textEditor.cursor1, textEditor.cursor2, fontSize, text);
+      const rects = findRectsForSelection(_ctx, textRect, cursor1, cursor2, fontSize, text);
       if (rects) {
         return rects.map((rect, i) => {
           const {x1,x2,y1,y2} = rect;
@@ -271,19 +216,19 @@ export default React.createClass({
   },
 
   getCursorCoords(selRects = []) {
-    const {textEditor} = this;
+    const {textEditor, textRect} = this;
+    const {cursor, showCursor} = textEditor;
 
-    if (this.state.isEditing && textEditor.showCursor && selRects.length === 0) {
+    if (this.state.isEditing && showCursor && selRects.length === 0) {
       const {fontSize, text} = this.props;
-      const pos = findPosForCursor(_ctx, textEditor.cursor, fontSize, text);
+      const pos = findPosForCursor(_ctx, cursor, fontSize, text);
       if (pos) {
-        return findCoordsForPos(_ctx, this.textRect, fontSize, text, pos);
+        return findCoordsForPos(_ctx, textRect, fontSize, text, pos);
       }
     }
   },
 
   render() {
-    const image = this.props.image || {};
     const img = this.state.image;
     const {canvasWidth, canvasHeight, isFocused, isEditing} = this.state;
     const {contrast, fontSize, text} = this.props;
@@ -302,6 +247,7 @@ export default React.createClass({
         ref="canvas"
         width={canvasWidth}
         height={canvasHeight}
+        onRedraw={this.props.onRedraw}
         onMouseDown={this.handleMouseDown}
         onMouseMove={this.handleMouseMove}
         onMouseUp={this.handleMouseUp}>
