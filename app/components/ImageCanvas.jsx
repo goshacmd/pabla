@@ -118,6 +118,10 @@ export default React.createClass({
     this.setState({ isFocused: true });
   },
 
+  setEditing() {
+    this.setState({ isFocused: true, isEditing: true });
+  },
+
   setNoFocus() {
     this.setState({ isFocused: false, isEditing: false });
   },
@@ -162,9 +166,9 @@ export default React.createClass({
         const cursor2 = mousePos;
 
         const {textRect} = this;
-        const {text, fontSize} = this.props;
-        let idx1 = findIdxForCursor(_ctx, textRect, cursor1, fontSize, text);
-        let idx2 = findIdxForCursor(_ctx, textRect, cursor2, fontSize, text);
+        const {text, textAttrs} = this.props;
+        let idx1 = findIdxForCursor(_ctx, textRect, cursor1, textAttrs, text);
+        let idx2 = findIdxForCursor(_ctx, textRect, cursor2, textAttrs, text);
         this.textEditor.setSelection(idx1, idx2, this.refs.txt);
       }
 
@@ -176,10 +180,10 @@ export default React.createClass({
     if (this.mouseDown) {
       if ((new Date - this.mouseDown) < 200) {
         const {textRect, startPos} = this;
-        const {text, fontSize} = this.props;
-        const cursor = findIdxForCursor(_ctx, textRect, startPos, fontSize, text);
+        const {text, textAttrs} = this.props;
+        const cursor = findIdxForCursor(_ctx, textRect, startPos, textAttrs, text);
         this.textEditor.setCursor(cursor, this.refs.txt);
-        this.setState({ isEditing: true });
+        this.setEditing();
         this.refs.txt.focus();
       }
     }
@@ -195,8 +199,8 @@ export default React.createClass({
     const {cursor1, cursor2} = textEditor;
 
     if (this.state.isEditing && cursor1 >= 0 && cursor2 >= 0) {
-      const {fontSize, text} = this.props;
-      const rects = findRectsForSelection(_ctx, textRect, cursor1, cursor2, fontSize, text);
+      const {textAttrs, text} = this.props;
+      const rects = findRectsForSelection(_ctx, textRect, cursor1, cursor2, textAttrs, text);
       if (rects) {
         return rects.map((rect, i) => {
           const {x1,x2,y1,y2} = rect;
@@ -213,10 +217,10 @@ export default React.createClass({
     const {cursor, showCursor} = textEditor;
 
     if (this.state.isEditing && showCursor && selRects.length === 0) {
-      const {fontSize, text} = this.props;
-      const pos = findPosForCursor(_ctx, cursor, fontSize, text);
+      const {textAttrs, text} = this.props;
+      const pos = findPosForCursor(_ctx, cursor, textAttrs, text);
       if (pos) {
-        return findCoordsForPos(_ctx, textRect, fontSize, text, pos);
+        return findCoordsForPos(_ctx, textRect, textAttrs, text, pos);
       }
     }
   },
@@ -224,7 +228,7 @@ export default React.createClass({
   render() {
     const img = this.state.image;
     const {canvasWidth, canvasHeight, isFocused, isEditing} = this.state;
-    const {filter, fontSize, text} = this.props;
+    const {filter, textAttrs, text} = this.props;
     const {textRect, mouseHeld, textEditor} = this;
     const mainFrame = [0, 0, canvasWidth, canvasHeight];
 
@@ -249,7 +253,7 @@ export default React.createClass({
           null}
         <CanvasFilter filter={filter} frame={mainFrame} />
         {textRect ?
-          <CanvasText ref="textRect" text={text} frame={textRect} fontSize={fontSize} onUpdateRect={newRect => this.textRect = newRect} /> :
+          <CanvasText ref="textRect" text={text} frame={textRect} textAttrs={textAttrs} onUpdateRect={newRect => this.textRect = newRect} /> :
           null}
         {textRect && isFocused ?
           <CanvasOutline width={2} frame={textRect} color={mouseHeld ? 'rgba(87, 205, 255, 0.5)' : '#0092d1'} /> :
@@ -258,9 +262,16 @@ export default React.createClass({
           <CanvasLine color="rgba(255, 255, 255, 0.75)" width={1} from={[cursorCoords.x, cursorCoords.y1]} to={[cursorCoords.x, cursorCoords.y2]} /> :
           null}
         {selectionRects}
-        </Canvas>
+      </Canvas>
 
-      <textarea ref='txt' value={text} onChange={e => this.props.onTextChange(e.target.value)} onKeyUp={this.updateCursor} style={{height: 1, width: 1, opacity: 0}} />
+      <textarea
+        ref="txt"
+        value={text}
+        onChange={e => this.props.onTextChange(e.target.value)}
+        onKeyUp={this.updateCursor}
+        onFocus={this.setEditing}
+        onBlur={this.setNoFocus}
+        style={{height: 1, width: 1, opacity: 0}} />
     </div>
   }
 });

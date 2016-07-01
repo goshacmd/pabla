@@ -27,7 +27,7 @@ const RightSidebar = ({ drawing, filter, onFilterChange, fontSize, onFontSizeCha
 };
 
 const mapStateToProps = (state) => ({
-  fontSize: state.fontSize,
+  fontSize: state.textAttrs.fontSize,
   filter: state.filter,
   size: state.size,
   drawing: state.drawing

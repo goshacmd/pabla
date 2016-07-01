@@ -1,9 +1,17 @@
 const CANVAS_WIDTH = 500;
 const MAX_TEXT_WIDTH = CANVAS_WIDTH - 40 - 10;
 
-export const splitTextInLines = (ctx, maxWidth, fontSize, text) => {
-  ctx.font = `${fontSize}px Georgia`;
-  ctx.fillStyle = "white";
+const setupCtx = (ctx, textAttrs) => {
+  const {font, fontSize, color} = textAttrs;
+
+  ctx.font = `${fontSize}px ${font}`;
+  ctx.fillStyle = color;
+};
+
+export const splitTextInLines = (ctx, maxWidth, textAttrs, text) => {
+  const {fontSize} = textAttrs;
+
+  setupCtx(ctx, textAttrs);
 
   const paras = text.split('\n');
   const words = paras.map(para => para.split(' ')).reduce((acc, words, idx) => {
@@ -38,11 +46,13 @@ export const splitTextInLines = (ctx, maxWidth, fontSize, text) => {
   return [lines, indices];
 };
 
-export const findIdxForCursor = (ctx, textRect, cursorAt, fontSize, text) => {
-  ctx.font = `${fontSize}px Georgia`;
-  ctx.fillStyle = "white";
+export const findIdxForCursor = (ctx, textRect, cursorAt, textAttrs, text) => {
+  const {fontSize} = textAttrs;
+
+  setupCtx(ctx, textAttrs);
+
   const maxWidth = MAX_TEXT_WIDTH;
-  const [lines, mapIndices] = splitTextInLines(ctx, maxWidth, fontSize, text);
+  const [lines, mapIndices] = splitTextInLines(ctx, maxWidth, textAttrs, text);
   const spaced = fontSize * 1.3;
   let cursor;
   lines.forEach((line, idx) => {
@@ -63,12 +73,18 @@ export const findIdxForCursor = (ctx, textRect, cursorAt, fontSize, text) => {
   return cursor !== undefined ? cursor + 1 : null;
 };
 
-export const coordsForLine = (textRect, fontSize, lineNo) => {
+export const coordsForLine = (textRect, textAttrs, lineNo) => {
+  const {fontSize} = textAttrs;
+
   const spaced = fontSize * 1.3;
   return { x: textRect[0] + 10, y: textRect[1] + fontSize + (lineNo * spaced) };
 };
 
-export const findPosForCursor = (ctx, cursor, fontSize, text) => {
+export const findPosForCursor = (ctx, cursor, textAttrs, text) => {
+  const {fontSize} = textAttrs;
+
+  setupCtx(ctx, textAttrs);
+
   const maxWidth = MAX_TEXT_WIDTH;
   const [lines, mapIndices] = splitTextInLines(ctx, maxWidth, fontSize, text);
 
@@ -88,32 +104,38 @@ export const findPosForCursor = (ctx, cursor, fontSize, text) => {
   return pos;
 };
 
-export const findCoordsForPos = (ctx, textRect, fontSize, text, pos) => {
+export const findCoordsForPos = (ctx, textRect, textAttrs, text, pos) => {
+  const {fontSize} = textAttrs;
+  setupCtx(ctx, textAttrs);
+
   const {lineNo, idxInLine, line} = pos;
   const lineText = line.map(i => text[i-1]).join('');
 
-  const {x, y} = coordsForLine(textRect, fontSize, lineNo);
+  const {x, y} = coordsForLine(textRect, textAttrs, lineNo);
   const wd1 = ctx.measureText(lineText.slice(0, idxInLine + 1)).width;
 
   return { x: x+wd1, y1: y-fontSize+7, y2: y+7 };
 };
 
-export const findRectsForSelection = (ctx, textRect, cursor1, cursor2, fontSize, text) => {
+export const findRectsForSelection = (ctx, textRect, cursor1, cursor2, textAttrs, text) => {
+  const {fontSize} = textAttrs;
+  setupCtx(ctx, textAttrs);
+
   let idx1 = cursor1;
   let idx2 = cursor2;
   if (idx1 > idx2) {
     [idx1, idx2] = [idx2, idx1];
   }
-  const pos1 = findPosForCursor(ctx, idx1, fontSize, text);
-  const pos2 = findPosForCursor(ctx, idx2, fontSize, text);
+  const pos1 = findPosForCursor(ctx, idx1, textAttrs, text);
+  const pos2 = findPosForCursor(ctx, idx2, textAttrs, text);
 
   if (!(pos1 && pos2)) return;
-  const [lines, mapIndices] = splitTextInLines(ctx, MAX_TEXT_WIDTH, fontSize, text);
+  const [lines, mapIndices] = splitTextInLines(ctx, MAX_TEXT_WIDTH, textAttrs, text);
 
   if (pos1.lineNo === pos2.lineNo) {
     const line = mapIndices.find(line => line.indexOf(idx1+1) !== -1);
     const lineText = line.map(i => text[i-1]).join('');
-    const {x, y} = coordsForLine(textRect, fontSize, pos1.lineNo);
+    const {x, y} = coordsForLine(textRect, textAttrs, pos1.lineNo);
     const wd1 = ctx.measureText(lineText.slice(0, pos1.idxInLine)).width;
     const wd2 = ctx.measureText(lineText.slice(pos1.idxInLine, pos2.idxInLine)).width;
 
@@ -122,7 +144,7 @@ export const findRectsForSelection = (ctx, textRect, cursor1, cursor2, fontSize,
     const lineNos = Array.apply(0, Array(pos2.lineNo - pos1.lineNo + 1)).map((_, idx) => idx + pos1.lineNo);
 
     return lineNos.map(lineNo => {
-      const {x, y} = coordsForLine(textRect, fontSize, lineNo);
+      const {x, y} = coordsForLine(textRect, textAttrs, lineNo);
 
       let wd1, wd2;
       if (lineNo == pos1.lineNo) {
@@ -146,17 +168,18 @@ export const findRectsForSelection = (ctx, textRect, cursor1, cursor2, fontSize,
   }
 };
 
-export const addText = (ctx, fontSize, _textRect, text) => {
+export const addText = (ctx, textAttrs, _textRect, text) => {
+  const {fontSize} = textAttrs;
+  setupCtx(ctx, textAttrs);
+
   const textRect = _textRect.slice();
 
-  ctx.font = `${fontSize}px Georgia`;
-  ctx.fillStyle = "white";
   const maxWidth = MAX_TEXT_WIDTH;
-  const [lines, mapIndices] = splitTextInLines(ctx, maxWidth, fontSize, text);
+  const [lines, mapIndices] = splitTextInLines(ctx, maxWidth, textAttrs, text);
 
   const spaced = fontSize * 1.3;
   lines.forEach((line, idx) => {
-    const {x, y} = coordsForLine(textRect, fontSize, idx);
+    const {x, y} = coordsForLine(textRect, textAttrs, idx);
     ctx.fillText(line, x, y, textRect[2]-20);
   });
 

@@ -11,8 +11,10 @@ const canvasComponents = {
     applyContrast(ctx, child.frame, value);
   },
   text(ctx, child) {
-    const rect = addText(ctx, child.fontSize, child.frame, child.text);
-    child.onUpdateRect && child.onUpdateRect(rect);
+    const rect = addText(ctx, child.textAttrs, child.frame, child.text);
+    if (child.frame.join(',') !== rect.join(',')) {
+      child.onUpdateRect && child.onUpdateRect(rect);
+    }
   },
   rect(ctx, child) {
     ctx.fillStyle = child.fill;
