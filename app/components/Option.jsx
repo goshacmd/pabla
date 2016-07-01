@@ -1,8 +1,10 @@
 import React from 'react';
 
-export default ({ selected, checkSize, children }) => {
+export default ({ selected, checkSize, borderStyle, children }) => {
   if (!checkSize) checkSize = 'normal';
-  const className = `OptionWrapper OptionWrapper--size-${checkSize}` + (selected ? " OptionWrapper--selected" : "");
+  if (!borderStyle) borderStyle = 'thin-grey';
+
+  const className = `OptionWrapper OptionWrapper--size-${checkSize} OptionWrapper--border-${borderStyle}` + (selected ? " OptionWrapper--selected" : "");
 
   return <div className={className}>
     <div className="OptionWrapper-w">

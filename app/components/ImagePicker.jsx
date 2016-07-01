@@ -1,4 +1,5 @@
 import React from 'react';
+import Option from './Option';
 
 export default React.createClass({
   propTypes: {
@@ -20,7 +21,9 @@ export default React.createClass({
         const imageUrl = image.url + "&w=364";
 
         return <div className={className} onClick={this.handleSelect.bind(this, image)} key={image.url}>
-          <div className="ImagePicker-image-wrapper"><img src={imageUrl}/ ></div>
+          <Option selected={sel} borderStyle="thick-transparent">
+              <img src={imageUrl}/ >
+          </Option>
         </div>;
       })}
     </div>;

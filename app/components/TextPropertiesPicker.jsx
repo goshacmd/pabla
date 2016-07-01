@@ -54,7 +54,7 @@ export default React.createClass({
         {colors.map(color => {
           return <div key={color} className="TextPropsPicker-color" onClick={this.updateColor.bind(this, color)}>
             <Option selected={color === this.props.textAttrs.color} checkSize="small">
-              <div style={{background: color}} />
+              <div style={{background: color, borderRadius: 3}} />
             </Option>
           </div>;
         })}

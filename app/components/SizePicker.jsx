@@ -1,16 +1,17 @@
 import React from 'react';
+import Option from './Option';
 
 const SizeItem = ({ name, code, currentCode, onSelect }) => {
   const onClick = (e) => {
     e.preventDefault();
     onSelect(code);
   };
-  const className = `SizePicker-size SizePicker-size--${code}` + (code === currentCode ? ' SizePicker-size--selected' : '');
+  const className = `SizePicker-size SizePicker-size--${code}`;
 
   return <div className={className} onClick={onClick}>
-    <div className="SizePicker-size-wrapper">
+    <Option selected={code === currentCode}>
       {name}
-    </div>
+    </Option>
   </div>
 };
 
