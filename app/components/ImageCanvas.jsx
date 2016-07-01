@@ -9,6 +9,8 @@ import TextEditor from 'util/textEditor';
 
 const _ctx = document.createElement('canvas').getContext('2d');
 
+const MIN_TEXT_WIDTH = 100;
+
 const makeBlue = (alpha) => `rgba(87, 205, 255, ${alpha})`;
 
 const rectCenter = ([x, y, w, h]) => {
@@ -188,6 +190,7 @@ export default React.createClass({
       let newRect = this.snap === 'left' ?
         [x - mouseDiff.x, y, w + mouseDiff.x, h] :
         [x, y, w - mouseDiff.x, h];
+      if (newRect[2] <= MIN_TEXT_WIDTH) return;
       this.setState({ textRect: newRect });
       this.mouseDiff = mouseDiff;
       this.startPos = mousePos;
