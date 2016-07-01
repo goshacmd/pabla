@@ -18,9 +18,16 @@ const initialState = {
 };
 
 export default function(state = initialState, action) {
+  let textAttrs;
   switch (action.type) {
+    case 'SET_FONT':
+      textAttrs = Object.assign({}, state.textAttrs, { font: action.font });
+      return Object.assign({}, state, { textAttrs });
     case 'SET_FONT_SIZE':
-      const textAttrs = Object.assign({}, state.textAttrs, { fontSize: action.size });
+      textAttrs = Object.assign({}, state.textAttrs, { fontSize: action.size });
+      return Object.assign({}, state, { textAttrs });
+    case 'SET_COLOR':
+      textAttrs = Object.assign({}, state.textAttrs, { color: action.color });
       return Object.assign({}, state, { textAttrs });
     case 'SET_FILTER':
       return Object.assign({}, state, { filter: action.filter });

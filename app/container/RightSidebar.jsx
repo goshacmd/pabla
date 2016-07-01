@@ -1,6 +1,6 @@
 import React from 'react';
 import {connect} from 'react-redux';
-import {setFilter, setFontSize, setSize} from 'actions';
+import {setFilter, setFont, setFontSize, setColor, setSize} from 'actions';
 
 import Card from 'components/Card';
 import FiltersPicker from 'components/FiltersPicker';
@@ -8,7 +8,7 @@ import TextPropertiesPicker from 'components/TextPropertiesPicker';
 import SizePicker from 'components/SizePicker';
 import DownloadButton from 'components/DownloadButton';
 
-const RightSidebar = ({ drawing, filter, onFilterChange, fontSize, onFontSizeChange, size, onSizeSelect }) => {
+const RightSidebar = ({ drawing, filter, onFilterChange, textAttrs, onFontChange, onFontSizeChange, onColorChange, size, onSizeSelect }) => {
   return <div className="Sidebar">
     <Card title="Sizes">
       <SizePicker size={size} onSizeSelect={onSizeSelect} />
@@ -17,7 +17,7 @@ const RightSidebar = ({ drawing, filter, onFilterChange, fontSize, onFontSizeCha
       <FiltersPicker filter={filter} onFilterChange={onFilterChange} />
     </Card>
     <Card title="Text">
-      <TextPropertiesPicker fontSize={fontSize} onFontSizeChange={onFontSizeChange} />
+      <TextPropertiesPicker textAttrs={textAttrs} onFontChange={onFontChange} onFontSizeChange={onFontSizeChange} onColorChange={onColorChange} />
     </Card>
     <DownloadButton drawing={drawing} />
     <p className="Credit">
@@ -27,15 +27,23 @@ const RightSidebar = ({ drawing, filter, onFilterChange, fontSize, onFontSizeCha
 };
 
 const mapStateToProps = (state) => ({
-  fontSize: state.textAttrs.fontSize,
+  textAttrs: state.textAttrs,
   filter: state.filter,
   size: state.size,
   drawing: state.drawing
 });
 
 const mapDispatchToProps = (dispatch) => ({
+  onFontChange(font) {
+    dispatch(setFont(font));
+  },
+
   onFontSizeChange(size) {
     dispatch(setFontSize(size));
+  },
+
+  onColorChange(color) {
+    dispatch(setColor(color));
   },
 
   onFilterChange(filter) {

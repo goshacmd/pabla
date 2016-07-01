@@ -1,8 +1,18 @@
 import {getPopularImages, searchImages as _searchImages} from 'util/unsplash';
 
+export const setFont = (font) => ({
+  type: 'SET_FONT',
+  font
+});
+
 export const setFontSize = (size) => ({
   type: 'SET_FONT_SIZE',
   size
+});
+
+export const setColor = (color) => ({
+  type: 'SET_COLOR',
+  color
 });
 
 export const setFilter = (filter) => ({
