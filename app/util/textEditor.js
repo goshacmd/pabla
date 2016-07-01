@@ -18,7 +18,7 @@ export default class TextEditor {
       this.cursor2 = null;
     } else {
       this.cursor = null;
-      this.cursor1 = selectionStart;
+      this.cursor1 = selectionStart + 1;
       this.cursor2 = selectionEnd + 1;
     }
   }
