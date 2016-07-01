@@ -1,4 +1,5 @@
 import {addText} from 'util/text';
+import StackBlur from 'stackblur-canvas';
 
 const canvasComponents = {
   image(ctx, child) {
@@ -6,9 +7,18 @@ const canvasComponents = {
   },
   filter(ctx, child) {
     const {filter} = child;
-    if (filter === 'none') return;
-    const value = filter === 'light_contrast' ? 0.35 : 0.65;
-    applyContrast(ctx, child.frame, value);
+
+    if (filter === 'light_contrast' || filter === 'heavy_contrast') {
+      const value = filter === 'light_contrast' ? 0.35 : 0.65;
+      applyContrast(ctx, child.frame, value);
+    }
+
+    if (filter === 'light_blur' || filter === 'heavy_blur') {
+      const radius = filter === 'light_blur' ? 15 : 40;
+      const [x, y, w, h] = child.frame;
+      const scale = window.devicePixelRatio || 1;
+      StackBlur.canvasRGB(ctx.canvas, x, y, w*scale, h*scale, radius);
+    }
   },
   text(ctx, child) {
     const rect = addText(ctx, child.textAttrs, child.frame, child.text);
