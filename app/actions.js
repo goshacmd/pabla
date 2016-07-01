@@ -10,6 +10,16 @@ export const setFontSize = (size) => ({
   size
 });
 
+export const setBold = (bold) => ({
+  type: 'SET_BOLD',
+  bold
+});
+
+export const setItalic = (italic) => ({
+  type: 'SET_ITALIC',
+  italic
+});
+
 export const setColor = (color) => ({
   type: 'SET_COLOR',
   color

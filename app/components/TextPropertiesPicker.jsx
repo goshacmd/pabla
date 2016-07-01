@@ -10,10 +10,17 @@ const colors = [
   '#71c318'
 ];
 
+const fonts = ['Arial', 'Georgia', 'Helvetica', 'Trebuchet MS'];
+const fontSizes = [8, 10, 12, 14, 16, 18, 20, 22, 26, 32, 36, 42, 48, 54];
+
 export default React.createClass({
   propTypes: {
     textAttrs: React.PropTypes.shape({
+      font: React.PropTypes.string.isRequired,
       fontSize: React.PropTypes.number.isRequired,
+      color: React.PropTypes.string.isRequired,
+      bold: React.PropTypes.bool.isRequired,
+      italic: React.PropTypes.bool.isRequired,
     }).isRequired,
     onFontChange: React.PropTypes.func.isRequired,
     onFontSizeChange: React.PropTypes.func.isRequired,
@@ -34,21 +41,42 @@ export default React.createClass({
     this.props.onColorChange(color);
   },
 
+  updateBold() {
+    this.props.onBoldChange(!this.props.textAttrs.bold);
+  },
+
+  updateItalic() {
+    this.props.onItalicChange(!this.props.textAttrs.italic);
+  },
+
   render() {
-    const {font, fontSize, color} = this.props.textAttrs;
+    const {font, fontSize, color, bold, italic} = this.props.textAttrs;
     return <div className="TextPropsPicker">
       <p>
         Font:
         <select ref="font" value={font} onChange={this.updateFont}>
-          {['Arial', 'Georgia'].map(s => <option key={s} value={s}>{s}</option>)}
+          {fonts.map(s => <option key={s} value={s}>{s}</option>)}
         </select>
       </p>
       <p>
         Font size:
         <select ref="fontSize" value={fontSize} onChange={this.updateFontSize}>
-          {[8, 10, 12, 14, 16, 18, 20, 22, 26, 32, 36, 42, 48, 54].map(s => <option key={s} value={s}>{s}</option>)}
+          {fontSizes.map(s => <option key={s} value={s}>{s}</option>)}
         </select>
       </p>
+
+      <div className="TextPropsPicker-style">
+        <div className="TextPropsPicker-style-bold" onClick={this.updateBold}>
+          <Option selected={bold}>
+            <span>Bold</span>
+          </Option>
+        </div>
+        <div className="TextPropsPicker-style-italic" onClick={this.updateItalic}>
+          <Option selected={italic}>
+            <span>Italic</span>
+          </Option>
+        </div>
+      </div>
 
       <div className="TextPropsPicker-colors">
         {colors.map(color => {

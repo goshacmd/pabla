@@ -145,47 +145,45 @@ export default React.createClass({
   },
 
   handleMouseMove(e) {
+    if (!this.mouseHeld) return;
+
     // move
-    if (this.mouseHeld) {
-      const {startPos} = this;
-      const mousePos = getMousePos(e, this.refs.canvas.refs.canvas);
+    const {startPos} = this;
+    const mousePos = getMousePos(e, this.refs.canvas.refs.canvas);
 
-      const mouseDiff = {
-        x: startPos.x - mousePos.x,
-        y: startPos.y - mousePos.y
-      };
+    const mouseDiff = {
+      x: startPos.x - mousePos.x,
+      y: startPos.y - mousePos.y
+    };
 
-      const {isFocused, isEditing} = this.state;
+    const {isFocused, isEditing} = this.state;
 
-      if (isFocused && !isEditing) {
-        this.textRect = applyMouseDiff(this.textRect, mouseDiff);
-        this.mouseDiff = mouseDiff;
-        this.startPos = mousePos;
-      } else if (isFocused && isEditing) {
-        const cursor1 = startPos;
-        const cursor2 = mousePos;
+    if (isFocused && !isEditing) {
+      this.textRect = applyMouseDiff(this.textRect, mouseDiff);
+      this.mouseDiff = mouseDiff;
+      this.startPos = mousePos;
+    } else if (isFocused && isEditing) {
+      const cursor1 = startPos;
+      const cursor2 = mousePos;
 
-        const {textRect} = this;
-        const {text, textAttrs} = this.props;
-        let idx1 = findIdxForCursor(_ctx, textRect, cursor1, textAttrs, text);
-        let idx2 = findIdxForCursor(_ctx, textRect, cursor2, textAttrs, text);
-        this.textEditor.setSelection(idx1, idx2, this.refs.txt);
-      }
-
-      setTimeout(this.doRedraw, 0);
+      const {textRect} = this;
+      const {text, textAttrs} = this.props;
+      let idx1 = findIdxForCursor(_ctx, textRect, cursor1, textAttrs, text);
+      let idx2 = findIdxForCursor(_ctx, textRect, cursor2, textAttrs, text);
+      this.textEditor.setSelection(idx1, idx2, this.refs.txt);
     }
+
+    setTimeout(this.doRedraw, 0);
   },
 
   handleMouseUp(e) {
-    if (this.mouseDown) {
-      if ((new Date - this.mouseDown) < 200) {
-        const {textRect, startPos} = this;
-        const {text, textAttrs} = this.props;
-        const cursor = findIdxForCursor(_ctx, textRect, startPos, textAttrs, text);
-        this.textEditor.setCursor(cursor, this.refs.txt);
-        this.setEditing();
-        this.refs.txt.focus();
-      }
+    if (this.mouseDown && (new Date - this.mouseDown) < 200) {
+      const {textRect, startPos} = this;
+      const {text, textAttrs} = this.props;
+      const cursor = findIdxForCursor(_ctx, textRect, startPos, textAttrs, text);
+      this.textEditor.setCursor(cursor, this.refs.txt);
+      this.setEditing();
+      this.refs.txt.focus();
     }
 
     this.mouseDiff = null;

@@ -13,7 +13,9 @@ const initialState = {
   textAttrs: {
     fontSize: 32,
     color: 'white',
-    font: 'Georgia'
+    font: 'Georgia',
+    bold: false,
+    italic: false
   }
 };
 
@@ -25,6 +27,12 @@ export default function(state = initialState, action) {
       return Object.assign({}, state, { textAttrs });
     case 'SET_FONT_SIZE':
       textAttrs = Object.assign({}, state.textAttrs, { fontSize: action.size });
+      return Object.assign({}, state, { textAttrs });
+    case 'SET_BOLD':
+      textAttrs = Object.assign({}, state.textAttrs, { bold: action.bold });
+      return Object.assign({}, state, { textAttrs });
+    case 'SET_ITALIC':
+      textAttrs = Object.assign({}, state.textAttrs, { italic: action.italic });
       return Object.assign({}, state, { textAttrs });
     case 'SET_COLOR':
       textAttrs = Object.assign({}, state.textAttrs, { color: action.color });

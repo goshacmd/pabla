@@ -2,9 +2,9 @@ const CANVAS_WIDTH = 500;
 const MAX_TEXT_WIDTH = CANVAS_WIDTH - 40 - 10;
 
 const setupCtx = (ctx, textAttrs) => {
-  const {font, fontSize, color} = textAttrs;
+  const {bold, italic, font, fontSize, color} = textAttrs;
 
-  ctx.font = `${fontSize}px ${font}`;
+  ctx.font = `${bold ? 'bold' : ''} ${italic ? 'italic' : ''} ${fontSize}px "${font}"`;
   ctx.fillStyle = color;
 };
 

@@ -28,6 +28,10 @@ export default React.createClass({
     return <canvas ref="canvas" width={width*scale} height={height*scale} style={style} {...{onMouseDown, onMouseMove, onMouseUp}} />
   },
 
+  scaleCanvas() {
+    this.refs.canvas.getContext('2d').scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
+  },
+
   componentDidMount() {
     this._debugID = this._reactInternalInstance._debugID;
 
@@ -35,7 +39,7 @@ export default React.createClass({
     tx.perform(this.mountAndInjectChildren, this, this.props.children, tx, ReactInstanceMap.get(this)._context);
     ReactUpdates.ReactReconcileTransaction.release(tx);
 
-    this.refs.canvas.getContext('2d').scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
+    this.scaleCanvas();
   },
 
   componentDidUpdate(oldProps) {
@@ -45,7 +49,7 @@ export default React.createClass({
     ReactUpdates.ReactReconcileTransaction.release(tx);
 
     if (oldProps.height !== this.props.height || oldProps.width !== this.props.width) {
-      this.refs.canvas.getContext('2d').scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
+      this.scaleCanvas();
     }
   },
 

@@ -210,6 +210,35 @@ body {
     height: 30px;
     cursor: pointer;
   }
+
+  &-style {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 0 16px 0;
+  }
+
+  &-style-bold, &-style-italic {
+    flex: 1 1 auto;
+    cursor: pointer;
+    text-align: center;
+
+    span {
+      font-size: 13px;
+      line-height: 30px;
+    }
+
+    &:first-child {
+      margin-right: 10px;
+    }
+  }
+
+  &-style-bold span {
+    font-weight: bold;
+  }
+
+  &-style-italic span {
+    font-style: italic;
+  }
 }
 
 .OptionWrapper {
