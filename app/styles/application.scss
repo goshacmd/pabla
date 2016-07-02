@@ -61,6 +61,7 @@ body {
     padding: 4px;
     margin-bottom: 14px;
     border-bottom: 1px solid $light-grey-color;
+    user-select: none;
 
     h4 {
       margin: 0;
@@ -146,6 +147,7 @@ body {
 .SizePicker {
   display: flex;
   justify-content: space-between;
+  user-select: none;
 
   &-size {
     height: 50px;
@@ -205,6 +207,7 @@ body {
   &-colors {
     display: flex;
     justify-content: space-between;
+    user-select: none;
   }
 
   &-color {
@@ -217,6 +220,7 @@ body {
     display: flex;
     justify-content: space-between;
     margin: 10px 0 16px 0;
+    user-select: none;
   }
 
   &-style-bold, &-style-italic {
