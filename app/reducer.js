@@ -10,6 +10,7 @@ const initialState = {
   drawing: null,
   size: 'square',
   text: '“Others have seen what is and asked why. I have seen what could be and asked why not.”\n- Pablo Picasso',
+  textRect: [20, 20, 500 - 40, 500 - 40],
   textAttrs: {
     fontSize: 32,
     color: 'white',
@@ -17,7 +18,9 @@ const initialState = {
     bold: false,
     italic: false,
     lineHeight: 1.35
-  }
+  },
+  focused: false,
+  editing: false
 };
 
 export default function(state = initialState, action) {
@@ -46,6 +49,16 @@ export default function(state = initialState, action) {
       return Object.assign({}, state, { size: action.size });
     case 'SET_TEXT':
       return Object.assign({}, state, { text: action.text });
+    case 'SET_TEXT_RECT':
+      return Object.assign({}, state, { textRect: action.rect });
+    case 'SET_FOCUS':
+      return Object.assign({}, state, { focused: action.part });
+    case 'SET_EDITING':
+      return Object.assign({}, state, { editing: true });
+    case 'SET_NO_FOCUS':
+      return Object.assign({}, state, { focused: false, editing: false });
+    case 'SET_NO_EDITING':
+      return Object.assign({}, state, { editing: false });
     case 'CACHE_DRAWING':
       return Object.assign({}, state, { drawing: action.drawing });
     case 'RECEIVE_IMAGES':

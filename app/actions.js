@@ -45,6 +45,28 @@ export const setText = (text) => ({
   text
 });
 
+export const setTextRect = (rect) => ({
+  type: 'SET_TEXT_RECT',
+  rect
+});
+
+export const setFocus = (part) => ({
+  type: 'SET_FOCUS',
+  part
+});
+
+export const setEditing = () => ({
+  type: 'SET_EDITING'
+});
+
+export const setNoFocus = () => ({
+  type: 'SET_NO_FOCUS'
+});
+
+export const setNoEditing = () => ({
+  type: 'SET_NO_EDITING'
+});
+
 export const cacheDrawing = (drawing) => ({
   type: 'CACHE_DRAWING',
   drawing

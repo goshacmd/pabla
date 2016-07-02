@@ -1,6 +1,6 @@
 import React from 'react';
 import {connect} from 'react-redux';
-import {cacheDrawing, setText} from 'actions';
+import {cacheDrawing, setText, setTextRect, setFocus, setEditing, setNoFocus, setNoEditing} from 'actions';
 
 import LeftSidebar from './LeftSidebar';
 import RightSidebar from './RightSidebar';
@@ -14,7 +14,7 @@ const App = React.createClass({
 
   render() {
     const selectedUrl = this.props.selected && this.props.selected.url;
-    const {text, textAttrs, filter, size} = this.props;
+    const {text, textRect, textAttrs, filter, size} = this.props;
     return (
       <div className="Container">
         <LeftSidebar />
@@ -22,10 +22,18 @@ const App = React.createClass({
           <h4 className="Main-subtitle">Canvas</h4>
           <ImageCanvas
             image={selectedUrl}
-            text={text}
-            textAttrs={textAttrs}
+            body={{
+              text, textAttrs, textRect
+            }}
             filter={filter}
             size={size}
+            isFocused={this.props.focused}
+            isEditing={this.props.editing}
+            onFocus={this.props.onFocus}
+            onEdit={this.props.onEdit}
+            onBlur={this.props.onBlur}
+            onCancelEdit={this.props.onCancelEdit}
+            onTextRectMove={this.props.onTextRectMove}
             onRedraw={this.updateDrawnImage}
             onTextChange={this.props.onTextChange} />
         </div>
@@ -41,7 +49,10 @@ const mapStateToProps = (state) => ({
   size: state.size,
   selected: state.selectedImage,
   drawing: state.drawing,
-  text: state.text
+  text: state.text,
+  textRect: state.textRect,
+  focused: state.focused,
+  editing: state.editing
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -51,6 +62,26 @@ const mapDispatchToProps = (dispatch) => ({
 
   onTextChange(text) {
     dispatch(setText(text));
+  },
+
+  onTextRectMove(rect) {
+    dispatch(setTextRect(rect));
+  },
+
+  onFocus(part) {
+    dispatch(setFocus(part));
+  },
+
+  onEdit() {
+    dispatch(setEditing());
+  },
+
+  onBlur() {
+    dispatch(setNoFocus());
+  },
+
+  onCancelEdit() {
+    dispatch(setNoEditing());
   }
 });
 
