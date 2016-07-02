@@ -53,8 +53,8 @@ export default React.createClass({
   getInitialState() {
     this.bodyBox = new TextBox('body', {
       cancelEditing: () => this.props.onCancelEdit(),
-      setFocus: () => this.setFocus('body'),
-      setEditing: () => this.setEditing(),
+      setFocus: () => this.props.onFocus('body'),
+      setEditing: () => this.props.onEdit(),
       moveRect: (newRect) => this.props.onTextRectMove(newRect),
       getProps: () => this.props.body,
       getArea: () => this.refs.txt,
@@ -96,14 +96,6 @@ export default React.createClass({
   updateCursor(e) {
     this.bodyBox.updateCursor(e);
     setTimeout(this.doRedraw, 0);
-  },
-
-  setFocus(part) {
-    this.props.onFocus(part);
-  },
-
-  setEditing() {
-    this.props.onEdit();
   },
 
   setNoFocus() {

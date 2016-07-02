@@ -9,17 +9,14 @@ const canvasComponents = {
   filter(ctx, child) {
     const {filter} = child;
 
-    if (filter === 'light_contrast' || filter === 'heavy_contrast') {
-      const value = filter === 'light_contrast' ? 0.35 : 0.65;
-      applyContrast(ctx, child.frame, value);
-    }
+    const [name, value] = {
+      light_contrast: ['contrast', 0.35],
+      heavy_contrast: ['contrast', 0.65],
+      light_blur: ['blur', 15],
+      heavy_blur: ['blur', 40]
+    }[filter];
 
-    if (filter === 'light_blur' || filter === 'heavy_blur') {
-      const radius = filter === 'light_blur' ? 15 : 40;
-      const [x, y, w, h] = child.frame;
-      const scale = window.devicePixelRatio || 1;
-      StackBlur.canvasRGB(ctx.canvas, x, y, w*scale, h*scale, radius);
-    }
+    applyFilter(ctx, child.frame, name, value);
   },
   text(ctx, child) {
     const rect = addText(ctx, child.textAttrs, child.frame, child.text);
@@ -45,6 +42,16 @@ const canvasComponents = {
     ctx.lineTo(...child.to);
     ctx.stroke();
     ctx.strokeStyle = null;
+  }
+};
+
+const applyFilter = (ctx, frame, name, value) => {
+  if (name === 'contrast') {
+    applyContrast(ctx, frame, value);
+  } else {
+    const [x, y, w, h] = frame;
+    const scale = window.devicePixelRatio || 1;
+    StackBlur.canvasRGB(ctx.canvas, x, y, w*scale, h*scale, value);
   }
 };
 
