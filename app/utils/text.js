@@ -1,4 +1,4 @@
-const BOX_MARGIN = 10;
+const BOX_MARGIN = 5;
 const BOX_TOTAL_MARGIN = 2 * BOX_MARGIN;
 
 const setupCtx = (ctx, textAttrs) => {
@@ -176,18 +176,18 @@ export const addText = (ctx, textAttrs, _textRect, text) => {
 
   const textRect = _textRect.slice();
 
-  const maxWidth = _textRect[2];
+  const maxWidth = _textRect[2] - BOX_TOTAL_MARGIN;
   const [lines, mapIndices] = splitTextInLines(ctx, maxWidth, textAttrs, text);
 
   const spaced = fontSize * lineHeight;
   lines.forEach((line, idx) => {
     const {x, y} = coordsForLine(textRect, textAttrs, idx);
-    ctx.fillText(line, x, y, textRect[2]-BOX_TOTAL_MARGIN);
+    ctx.fillText(line, x, y, maxWidth);
   });
 
   const totalHeight = lines.length * spaced;
 
-  textRect[3] = totalHeight + BOX_MARGIN;
+  textRect[3] = totalHeight;
 
   return textRect;
 };
