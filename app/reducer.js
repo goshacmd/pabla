@@ -1,4 +1,4 @@
-import {getPopularImages} from 'util/unsplash';
+import {getPopularImages} from 'utils/unsplash';
 
 const images = getPopularImages();
 

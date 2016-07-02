@@ -4,8 +4,8 @@ import ReactUpdates from 'react/lib/ReactUpdates';
 import ReactMultiChild from 'react/lib/ReactMultiChild';
 import ReactInstanceMap from 'react/lib/ReactInstanceMap';
 
-import {renderCanvasLayout} from 'util/canvas';
-import debounce from 'util/debounce';
+import {renderCanvasLayout} from 'utils/canvas';
+import debounce from 'utils/debounce';
 
 const Container = Object.assign({}, ReactMultiChild.Mixin, {
   mountAndInjectChildren(children, tx, ct) {

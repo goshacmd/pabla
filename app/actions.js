@@ -1,4 +1,4 @@
-import {getPopularImages, searchImages as _searchImages} from 'util/unsplash';
+import {getPopularImages, searchImages as _searchImages} from 'utils/unsplash';
 
 export const setFont = (font) => ({
   type: 'SET_FONT',

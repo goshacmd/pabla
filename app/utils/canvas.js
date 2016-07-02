@@ -1,4 +1,4 @@
-import {addText} from 'util/text';
+import {addText} from 'utils/text';
 import StackBlur from 'stackblur-canvas';
 
 const canvasComponents = {

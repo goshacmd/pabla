@@ -2,10 +2,10 @@ import React from 'react';
 import {Canvas, CanvasRect, CanvasFilter, CanvasImage, CanvasText, CanvasOutline, CanvasLine} from './Canvas';
 import Spinner from './Spinner';
 
-import {getImage} from 'util/imageCache';
+import {getImage} from 'utils/imageCache';
 
-import {findIdxForCursor, findPosForCursor, findCoordsForPos, findRectsForSelection} from 'util/text';
-import TextEditor from 'util/textEditor';
+import {findIdxForCursor, findPosForCursor, findCoordsForPos, findRectsForSelection} from 'utils/text';
+import TextEditor from 'utils/textEditor';
 
 const _ctx = document.createElement('canvas').getContext('2d');
 
