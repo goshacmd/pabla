@@ -64,8 +64,8 @@ const mapDispatchToProps = (dispatch) => ({
     dispatch(setText(text));
   },
 
-  onTextRectMove(rect) {
-    dispatch(setTextRect(rect));
+  onTextRectMove(part, rect) {
+    dispatch(setTextRect(part, rect));
   },
 
   onFocus(part) {

@@ -1,6 +1,5 @@
 export default class TextEditor {
-  constructor(component) {
-    this.component = component;
+  constructor() {
     this.cursor = 0;
     this.cursor1 = null;
     this.cursor2 = null;

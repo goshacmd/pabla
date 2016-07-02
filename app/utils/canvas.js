@@ -1,4 +1,5 @@
 import {addText} from 'utils/text';
+import {centerCrop} from 'utils/pixels';
 import StackBlur from 'stackblur-canvas';
 
 const canvasComponents = {
@@ -56,25 +57,10 @@ const drawImage = (ctx, frame, img) => {
   const canvasWidth = frame[2];
   const canvasHeight = frame[3];
 
-  const imgWidth = img.naturalWidth;
-  const imgHeight = img.naturalHeight;
+  const area = {width: img.naturalWidth, height: img.naturalHeight};
+  const canvas = {width: frame[2], height: frame[3]};
 
-  const origRatio = imgWidth / imgHeight;
-  const canvasRatio = canvasWidth / canvasHeight;
-
-  // determine crop
-  let zoneWidth, zoneHeight;
-  if (canvasRatio >= origRatio) {
-    zoneWidth = imgWidth;
-    zoneHeight = imgWidth / canvasRatio;
-  } else {
-    zoneWidth = imgHeight * canvasRatio;
-    zoneHeight = imgHeight;
-  }
-
-  // center
-  const xPad = (imgWidth - zoneWidth) / 2;
-  const yPad = (imgHeight - zoneHeight) / 2;
+  const {xPad, yPad, zoneWidth, zoneHeight} = centerCrop(area, canvas);
 
   ctx.drawImage(img, xPad, yPad, zoneWidth, zoneHeight, 0, 0, canvasWidth, canvasHeight);
 };
