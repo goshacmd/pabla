@@ -1,5 +1,5 @@
 import React from 'react';
-import {CanvasRect, CanvasFilter, CanvasImage, CanvasText, CanvasOutline, CanvasLine} from './Canvas';
+import {CanvasRect, CanvasFilter, CanvasImage, CanvasText, CanvasOutline, CanvasLine, CanvasGroup} from './Canvas';
 import TextEditor from 'utils/textEditor';
 import {findIdxForCursor, findPosForCursor, findCoordsForPos, findRectsForSelection} from 'utils/text';
 import {keys} from 'utils/keyboard';
@@ -187,19 +187,19 @@ export default class TextBox {
       this.hooks.moveRect(newRect);
     };
 
-    return [
-      textRect && isFocused ? <CanvasRect frame={leftSnapFrame} fill={outlineColor} /> : null,
-      textRect && isFocused ? <CanvasRect frame={rightSnapFrame} fill={outlineColor} /> : null,
-      textRect ?
-        <CanvasText ref="textRect" text={text} frame={textRect} textAttrs={textAttrs} onUpdateRect={updateTextRect} /> :
-        null,
-      textRect && isFocused ?
+    return <CanvasGroup>
+      {textRect && isFocused ? <CanvasRect frame={leftSnapFrame} fill={outlineColor} /> : null}
+      {textRect && isFocused ? <CanvasRect frame={rightSnapFrame} fill={outlineColor} /> : null}
+      {textRect ?
+        <CanvasText text={text} frame={textRect} textAttrs={textAttrs} onUpdateRect={updateTextRect} /> :
+        null}
+      {textRect && isFocused ?
         <CanvasOutline width={2} frame={textRect} color={outlineColor} /> :
-        null,
-      cursorCoords && isEditing ?
+        null}
+      {cursorCoords && isEditing ?
         <CanvasLine color="rgba(255, 255, 255, 0.75)" width={1} from={[cursorCoords.x, cursorCoords.y1]} to={[cursorCoords.x, cursorCoords.y2]} /> :
-        null,
-      isEditing ? selectionRects : null
-    ];
+        null}
+      {isEditing ? selectionRects : null}
+    </CanvasGroup>;
   }
 }

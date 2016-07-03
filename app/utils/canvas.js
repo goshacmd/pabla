@@ -72,13 +72,22 @@ const drawImage = (ctx, frame, img) => {
   ctx.drawImage(img, xPad, yPad, zoneWidth, zoneHeight, 0, 0, canvasWidth, canvasHeight);
 };
 
-export const renderCanvasLayout = (ctx, layout) => {
+const renderCanvasItems = (ctx, layout) => {
   layout.children.forEach(child => {
     if (!child) return;
-    const renderer = canvasComponents[child.type];
-    if (!renderer) console.error(`Unknown canvas component: ${child.type}`);
-    ctx.save();
-    renderer(ctx, child);
-    ctx.restore();
+    if (child.type === 'group') {
+      renderCanvasItems(ctx, child);
+    } else {
+      const renderer = canvasComponents[child.type];
+      if (!renderer) console.error(`Unknown canvas component: ${child.type}`);
+      ctx.save();
+      renderer(ctx, child);
+      ctx.restore();
+    }
   });
+};
+
+export const renderCanvasLayout = (ctx, width, height, layout) => {
+  ctx.clearRect(0, 0, height, width);
+  renderCanvasItems(ctx, layout);
 };

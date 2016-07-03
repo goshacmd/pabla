@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 import {Canvas, CanvasRect, CanvasFilter, CanvasImage, CanvasText, CanvasOutline, CanvasLine} from './Canvas';
 import {getImage} from 'utils/imageCache';
 import {rectCenter, isInRect, pointDiff} from 'utils/pixels';
@@ -112,7 +113,7 @@ export default React.createClass({
   },
 
   getMousePos(e) {
-    return getMousePos(e, this.refs.canvas.refs.canvas);
+    return getMousePos(e, ReactDOM.findDOMNode(this.refs.canvas));
   },
 
   findRegionUnderPos(mousePos) {
