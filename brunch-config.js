@@ -10,7 +10,10 @@ module.exports = {
   },
 
   plugins: {
-    babel: {presets: ['es2015', 'react']},
+    babel: {
+      presets: ['es2015', 'react'],
+      plugins: ['syntax-object-rest-spread']
+    },
 
     postcss: {
       processors: [
