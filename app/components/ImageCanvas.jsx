@@ -52,37 +52,11 @@ export default React.createClass({
   },
 
   getInitialState() {
-    this.bodyBox = new TextBox('body', {
-      cancelEditing: () => this.props.onCancelEdit(),
-      setFocus: () => this.props.onFocus('body'),
-      setEditing: () => this.props.onEdit(),
-      moveRect: (newRect) => this.props.onTextRectMove(newRect),
-      getProps: () => this.props.body,
-      getArea: () => this.refs.txt,
-      getFocusState: () => this.props
-    });
     return {};
   },
 
   componentWillMount() {
     Promise.all([this.initSize(this.props.size), this.loadImage(this.props.image)]);
-  },
-
-  componentDidMount() {
-    window.requestAnimationFrame(this.doRedraw);
-
-    setInterval(() => {
-      if (this.props.isEditing) {
-        const textEditor = this.getTextEditor();
-        if (!textEditor) return;
-        textEditor.toggleCursor();
-        window.requestAnimationFrame(this.doRedraw);
-      }
-    }, 450);
-  },
-
-  getTextEditor() {
-    return this.bodyBox.textEditor;
   },
 
   doRedraw() {
@@ -95,7 +69,7 @@ export default React.createClass({
   },
 
   updateCursor(e) {
-    this.bodyBox.updateCursor(e);
+    this.refs.bodyBox.updateCursor(e);
     setTimeout(this.doRedraw, 0);
   },
 
@@ -104,7 +78,7 @@ export default React.createClass({
   },
 
   getClickRegions() {
-    const bodyRegions = this.bodyBox.getClickRegions();
+    const bodyRegions = this.refs.bodyBox.getClickRegions();
 
     return Object.keys(bodyRegions).reduce((memo, key) => {
       memo['body__' + key] = bodyRegions[key];
@@ -136,7 +110,7 @@ export default React.createClass({
     const [area, sub] = pointedRegion.split('__');
 
     this._mouseArea = area + 'Box';
-    this[this._mouseArea].handleMouseDown(e, mousePos, sub);
+    this.refs[this._mouseArea].handleMouseDown(e, mousePos, sub);
     setTimeout(this.doRedraw, 0);
   },
 
@@ -144,14 +118,14 @@ export default React.createClass({
     const {_mouseArea} = this;
     if (!_mouseArea) return;
     const mousePos = this.getMousePos(e);
-    this[_mouseArea].handleMouseMove(e, mousePos);
+    this.refs[_mouseArea].handleMouseMove(e, mousePos);
     setTimeout(this.doRedraw, 0);
   },
 
   handleMouseUp(e) {
     const {_mouseArea} = this;
     if (!_mouseArea) return;
-    this[_mouseArea].handleMouseUp(e);
+    this.refs[_mouseArea].handleMouseUp(e);
     this._mouseArea = null;
     setTimeout(this.doRedraw, 0);
   },
@@ -218,7 +192,19 @@ export default React.createClass({
         {showVerticalGuide ?
           <CanvasLine color={makeBlue(0.85)} width={2} from={verticalGuidePoints[0]} to={verticalGuidePoints[1]} /> :
           null}
-        {this.bodyBox.render()}
+        <TextBox
+          ref="bodyBox"
+          part="body"
+          cancelEditing={this.props.onCancelEdit}
+          setEditing={this.props.onEdit}
+          setFocus={this.props.onFocus.bind(this, 'body')}
+          moveRect={this.props.onTextRectMove.bind(this)}
+          textRect={this.props.body.textRect}
+          textAttrs={this.props.body.textAttrs}
+          text={this.props.body.text}
+          getArea={() => this.refs.txt}
+          focusedPart={this.props.isFocused}
+          isEditing={this.props.isEditing} />
       </Canvas>
 
       <textarea

@@ -11,19 +11,28 @@ const MIN_TEXT_WIDTH = 100;
 
 const makeBlue = (alpha) => `rgba(87, 205, 255, ${alpha})`;
 
-export default class TextBox {
-  constructor(part, hooks) {
-    this._part = part;
+export default React.createClass({
+  getInitialState() {
     this.textEditor = new TextEditor();
-    this.hooks = hooks;
-  }
+    return {};
+  },
 
-  getProps() {
-    return this.hooks.getProps();
-  }
+  componentDidMount() {
+    this._cursorInterval = setInterval(() => {
+      const {isEditing} = this.getFocusState();
+      if (isEditing) {
+        this.textEditor.toggleCursor();
+        window.requestAnimationFrame(() => this.forceUpdate());
+      }
+    }, 450);
+  },
+
+  componentWillUnmount() {
+    clearInterval(this._cursorInterval);
+  },
 
   getSnapFrames() {
-    const rect = this.getProps().textRect;
+    const rect = this.props.textRect;
     const [x, y, w, h] = rect;
     const size = 15;
     const {y: yCenter} = rectCenter(rect);
@@ -31,10 +40,10 @@ export default class TextBox {
     const right = [x + w - size/2, yCenter - size/2, size, size];
 
     return {left, right};
-  }
+  },
 
   getClickRegions() {
-    const {textRect} = this.getProps();
+    const {textRect} = this.props;
 
     const {left, right} = this.getSnapFrames();
 
@@ -43,10 +52,10 @@ export default class TextBox {
       rightSnap: right,
       rect: textRect
     };
-  }
+  },
 
   getSelectionRects() {
-    const {textRect, textAttrs, text} = this.getProps();
+    const {textRect, textAttrs, text} = this.props;
     const {cursor1, cursor2} = this.textEditor;
     const {isEditing} = this.getFocusState();
 
@@ -61,10 +70,10 @@ export default class TextBox {
     }
 
     return [];
-  }
+  },
 
   getCursorCoords(selRects = []) {
-    const {textRect, textAttrs, text} = this.getProps();
+    const {textRect, textAttrs, text} = this.props;
     const {cursor, showCursor} = this.textEditor;
     const {isEditing} = this.getFocusState();
 
@@ -74,23 +83,23 @@ export default class TextBox {
         return findCoordsForPos(_ctx, textRect, textAttrs, text, pos);
       }
     }
-  }
+  },
 
   getFocusState() {
-    const {isFocused, isEditing} = this.hooks.getFocusState();
+    const {focusedPart, isEditing} = this.props;
     return {
-      isFocused: isFocused === this._part,
-      isEditing: isFocused === this._part && isEditing
+      isFocused: focusedPart === this.props.part,
+      isEditing: focusedPart === this.props.part && isEditing
     };
-  }
+  },
 
   getLinkedArea() {
-    return this.hooks.getArea();
-  }
+    return this.props.getArea();
+  },
 
   updateCursor(e) {
     if (keys[e.which] === 'escape') {
-      this.hooks.cancelEditing();
+      this.props.cancelEditing();
       e.target.blur();
     }
 
@@ -98,7 +107,7 @@ export default class TextBox {
     const {selectionStart, selectionEnd} = txt;
 
     this.textEditor.setFromInput(selectionStart, selectionEnd);
-  }
+  },
 
   handleMouseDown(e, mousePos, sub) {
     this.startPos = mousePos;
@@ -108,7 +117,7 @@ export default class TextBox {
       if (this.getFocusState().isFocused) {
         this.mouseDown = new Date;
       }
-      this.hooks.setFocus();
+      this.props.setFocus();
     } else if (sub === 'leftSnap') {
       this.mouseHeld = true;
       this.snap = 'left';
@@ -116,7 +125,7 @@ export default class TextBox {
       this.mouseHeld = true;
       this.snap = 'right';
     }
-  }
+  },
 
   handleMouseMove(e, mousePos) {
     if (!this.mouseHeld) return;
@@ -131,47 +140,47 @@ export default class TextBox {
 
     if (isFocused && !isEditing && !this.snap) {
       // drag text box
-      const {textRect} = this.getProps();
+      const {textRect} = this.props;
       const newRect = moveRect(textRect, mouseDiff);
-      this.hooks.moveRect(newRect);
+      this.props.moveRect(newRect);
       this.startPos = mousePos;
     } else if (this.snap) {
       // resize text
-      const rect = this.getProps().textRect;
+      const rect = this.props.textRect;
       const newRect = shrinkRect(rect, this.snap, mouseDiff.x);
       if (newRect[2] <= MIN_TEXT_WIDTH) return;
-      this.hooks.moveRect(newRect);
+      this.props.moveRect(newRect);
       this.startPos = mousePos;
     } else if (isFocused && isEditing) {
       //select text
       const cursor1 = startPos;
       const cursor2 = mousePos;
 
-      const {textRect, textAttrs, text} = this.getProps();
+      const {textRect, textAttrs, text} = this.props;
       let idx1 = findIdxForCursor(_ctx, textRect, cursor1, textAttrs, text);
       let idx2 = findIdxForCursor(_ctx, textRect, cursor2, textAttrs, text);
       this.textEditor.setSelection(idx1, idx2, this.getLinkedArea());
     }
-  }
+  },
 
   handleMouseUp(e) {
     if (this.mouseDown && (new Date - this.mouseDown) < 200 && !this.snap) {
       const {startPos} = this;
-      const {text, textAttrs, textRect} = this.getProps();
+      const {text, textAttrs, textRect} = this.props;
       const cursor = findIdxForCursor(_ctx, textRect, startPos, textAttrs, text);
       this.textEditor.setCursor(cursor, this.getLinkedArea());
-      this.hooks.setEditing();
+      this.props.setEditing();
       this.getLinkedArea().focus();
     }
 
     this.mouseDown = null;
     this.mouseHeld = false;
     this.snap = null;
-  }
+  },
 
   render() {
     const {isFocused, isEditing} = this.getFocusState();
-    const {text, textAttrs, textRect} = this.getProps();
+    const {text, textAttrs, textRect} = this.props;
     const {mouseHeld} = this;
 
     const selectionRectFrames = this.getSelectionRects();
@@ -184,7 +193,7 @@ export default class TextBox {
     const outlineColor = mouseHeld ? makeBlue(0.5) : '#0092d1';
 
     const updateTextRect = newRect => {
-      this.hooks.moveRect(newRect);
+      this.props.moveRect(newRect);
     };
 
     return <CanvasGroup>
@@ -202,4 +211,4 @@ export default class TextBox {
       {isEditing ? selectionRects : null}
     </CanvasGroup>;
   }
-}
+});
