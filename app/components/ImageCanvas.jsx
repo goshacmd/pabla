@@ -1,13 +1,25 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {Canvas, CanvasRect, CanvasFilter, CanvasText, CanvasImage, CanvasOutline, CanvasLine} from './Canvas';
-import {rectCenter, pointDiff} from 'utils/pixels';
+import {rectCenter, diffWithin} from 'utils/pixels';
 import Spinner from './Spinner';
 import TextBox from './TextBox';
 import computeDimensions from './computeImageDimensions';
 import loadImage from './loadImage';
 
 const makeBlue = (alpha) => `rgba(87, 205, 255, ${alpha})`;
+
+const FILTERS = {
+  light_contrast: ['contrast', 0.35],
+  heavy_contrast: ['contrast', 0.65],
+  light_blur: ['blur', 15],
+  heavy_blur: ['blur', 40]
+};
+
+const Filter = ({ name: humanName, frame }) => {
+  const [name, value] = FILTERS[humanName];
+  return <CanvasFilter filter={name} value={value} frame={frame} />;
+};
 
 const ImageCanvas = React.createClass({
   redraw() {
@@ -27,7 +39,7 @@ const ImageCanvas = React.createClass({
     this.setNoFocus();
   },
 
-  getGuidePoints() {
+  getGuideLines() {
     const {canvasWidth, canvasHeight} = this.props;
 
     const horizontal = [[0, canvasHeight / 2], [canvasWidth, canvasHeight / 2]];
@@ -46,12 +58,9 @@ const ImageCanvas = React.createClass({
 
     const textCenter = rectCenter(rect);
     const canvasCenter = { x: canvasWidth/2, y: canvasHeight/2 };
-    const {xDiff, yDiff} = pointDiff(canvasCenter, textCenter);
+    const {xWithin: vertical, yWithin: horizontal} = diffWithin(canvasCenter, textCenter, {x: 1, y: 1});
 
-    return {
-      horizontal: yDiff >= -1 && yDiff <= 1,
-      vertical: xDiff >= -1 && xDiff <= 1,
-    };
+    return {horizontal, vertical};
   },
 
   render() {
@@ -67,7 +76,7 @@ const ImageCanvas = React.createClass({
     const {text} = this.props.body;
     const mainFrame = [0, 0, canvasWidth, canvasHeight];
 
-    const {horizontal: horizontalGuidePoints, vertical: verticalGuidePoints} = this.getGuidePoints();
+    const {horizontal: horizontalGuideLine, vertical: verticalGuideLine} = this.getGuideLines();
     const {horizontal: showHorizontalGuide, vertical: showVerticalGuide} = isFocused ? this.closeToGuides(isFocused) : {};
 
     return <div className="ImageCanvas">
@@ -77,12 +86,12 @@ const ImageCanvas = React.createClass({
         height={canvasHeight}
         onRedraw={this.props.onRedraw}>
         <CanvasImage image={image} frame={mainFrame} onMouseDown={this.handleClickOnImage} />
-        <CanvasFilter filter={filter} frame={mainFrame} />
+        <Filter name={filter} frame={mainFrame} />
         {showHorizontalGuide ?
-          <CanvasLine color={makeBlue(0.85)} width={2} from={horizontalGuidePoints[0]} to={horizontalGuidePoints[1]} /> :
+          <CanvasLine color={makeBlue(0.85)} width={2} from={horizontalGuideLine[0]} to={horizontalGuideLine[1]} /> :
           null}
         {showVerticalGuide ?
-          <CanvasLine color={makeBlue(0.85)} width={2} from={verticalGuidePoints[0]} to={verticalGuidePoints[1]} /> :
+          <CanvasLine color={makeBlue(0.85)} width={2} from={verticalGuideLine[0]} to={verticalGuideLine[1]} /> :
           null}
         <TextBox
           ref="bodyBox"

@@ -24,6 +24,15 @@ export const pointDiff = (a, b) => {
   return {xDiff, yDiff};
 };
 
+export const diffWithin = (a, b, {x, y}) => {
+  const {xDiff, yDiff} = pointDiff(a, b);
+
+  return {
+    xWithin: xDiff >= -x && xDiff <= x,
+    yWithin: yDiff >= -y && yDiff <= y
+  };
+};
+
 export const centerCrop = (area, frame) => {
   const {width: imgWidth, height: imgHeight} = area;
   const {width: canvasWidth, height: canvasHeight} = frame;

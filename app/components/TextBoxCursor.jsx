@@ -3,7 +3,11 @@ import {CanvasLine} from './Canvas';
 
 export default React.createClass({
   propTypes: {
-    coords: React.PropTypes.array.isRequired
+    coords: React.PropTypes.shape({
+      x: React.PropTypes.number.isRequired,
+      y1: React.PropTypes.number.isRequired,
+      y2: React.PropTypes.number.isRequired
+    }).isRequired
   },
 
   getInitialState() {

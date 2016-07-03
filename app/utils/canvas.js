@@ -7,16 +7,8 @@ const canvasComponents = {
     drawImage(ctx, child.frame, child.image);
   },
   filter(ctx, child) {
-    const {filter} = child;
-
-    const [name, value] = {
-      light_contrast: ['contrast', 0.35],
-      heavy_contrast: ['contrast', 0.65],
-      light_blur: ['blur', 15],
-      heavy_blur: ['blur', 40]
-    }[filter];
-
-    applyFilter(ctx, child.frame, name, value);
+    const {filter, value} = child;
+    applyFilter(ctx, child.frame, filter, value);
   },
   text(ctx, child) {
     const rect = addText(ctx, child.textAttrs, child.frame, child.text);
