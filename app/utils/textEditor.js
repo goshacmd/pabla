@@ -3,11 +3,6 @@ export default class TextEditor {
     this.cursor = 0;
     this.cursor1 = null;
     this.cursor2 = null;
-    this.showCursor = false;
-  }
-
-  toggleCursor() {
-    this.showCursor = !this.showCursor;
   }
 
   setFromInput(selectionStart, selectionEnd) {

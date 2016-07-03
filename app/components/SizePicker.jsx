@@ -16,13 +16,18 @@ const SizeItem = ({ name, code, currentCode, onSelect }) => {
 };
 
 export default React.createClass({
+  propTypes: {
+    size: React.PropTypes.oneOf(['tall', 'square', 'wide']).isRequired,
+    onSizeSelect: React.PropTypes.func.isRequired
+  },
+
   render() {
-    const size = this.props.size;
+    const {size, onSizeSelect} = this.props;
 
     return <div className="SizePicker">
-      <SizeItem name="Tall" code="tall" currentCode={size} onSelect={this.props.onSizeSelect} />
-      <SizeItem name="Square" code="square" currentCode={size} onSelect={this.props.onSizeSelect} />
-      <SizeItem name="Wide" code="wide" currentCode={size} onSelect={this.props.onSizeSelect} />
+      <SizeItem name="Tall" code="tall" currentCode={size} onSelect={onSizeSelect} />
+      <SizeItem name="Square" code="square" currentCode={size} onSelect={onSizeSelect} />
+      <SizeItem name="Wide" code="wide" currentCode={size} onSelect={onSizeSelect} />
     </div>;
   }
 });

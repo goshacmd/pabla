@@ -6,6 +6,7 @@ import ReactMultiChild from 'react/lib/ReactMultiChild';
 import ReactInstanceMap from 'react/lib/ReactInstanceMap';
 
 import {CPrimitive, CGroup, CSurface} from 'utils/objectCanvas';
+import {getMousePos} from 'utils/pixels';
 import debounce from 'utils/debounce';
 
 const createComponent = (name, ...mixins) => {
@@ -89,6 +90,7 @@ const Surface = React.createClass({
   },
 
   componentDidMount() {
+    try {
     this._debugID = this._reactInternalInstance._debugID;
 
     const {width, height} = this.props;
@@ -103,9 +105,11 @@ const Surface = React.createClass({
       ReactInstanceMap.get(this)._context
     );
     ReactUpdates.ReactReconcileTransaction.release(transaction);
+    } catch(e) { console.error(e); }
   },
 
   componentDidUpdate(oldProps) {
+    try {
     const transaction = ReactUpdates.ReactReconcileTransaction.getPooled();
     transaction.perform(
       this.updateChildren,
@@ -122,20 +126,45 @@ const Surface = React.createClass({
 
     this.node.render();
     this.passRendered();
+    } catch(e) { console.error(e); }
   },
 
   _passRendered() {
+    if (!this.isMounted) return;
     const cb = this.props.onRedraw;
-    const canvas = ReactDOM.findDOMNode(this);
+    const {canvas} = this.refs;
     if (!cb || !canvas) return;
 
     const data = canvas.toDataURL('image/jpeg');
     cb(data);
   },
 
+  _findAndCallEventHandler(e, type) {
+    const mousePos = getMousePos(e, this.refs.canvas);
+
+    const handler = this._handler ? this._handler : this.node.findHandlerForEvent(mousePos, type);
+    if (handler) {
+      if (handler._props.mouseSnap && type === 'onMouseDown') this._handler = handler;
+      handler._props[type](e, mousePos);
+    }
+  },
+
+  onMouseDown(e) {
+    this._findAndCallEventHandler(e, 'onMouseDown');
+  },
+
+  onMouseMove(e) {
+    this._findAndCallEventHandler(e, 'onMouseMove');
+  },
+
+  onMouseUp(e) {
+    this._findAndCallEventHandler(e, 'onMouseUp');
+    this._handler = null;
+  },
+
   render() {
-    const {onMouseDown, onMouseMove, onMouseUp} = this.props;
-    return <canvas {...{onMouseDown, onMouseMove, onMouseUp}} />;
+    const {onMouseDown, onMouseMove, onMouseUp} = this;
+    return <canvas ref="canvas" {...{onMouseDown, onMouseMove, onMouseUp}} />;
   }
 });
 
@@ -212,17 +241,3 @@ export const CanvasOutline = Outline;
 export const CanvasLine = Line;
 export const Canvas = Surface;
 export const CanvasGroup = Group;
-
-//export default React.createClass({
-  //render() {
-    //const {a, b, c} = this.props;
-    //const isSq = a === 'square';
-    //const frame = isSq ? [10, 10, 30, 30] : [20, 20, 50, 50];
-    //const height = isSq ? 200 : 100;
-    //return <Surface width={100} height={height}>
-      //<Group a={a}>
-        //<Rect frame={frame} fill="black" />
-      //</Group>
-    //</Surface>;
-  //}
-//});

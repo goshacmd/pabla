@@ -1,12 +1,18 @@
 import {renderCanvasLayout} from 'utils/canvas';
+import {isInRect} from 'utils/pixels';
 
 class CNode {
   constructor() {
     this._props = {};
+    this.parentNode = null;
   }
 
   setProps(props) {
     this._props = props;
+  }
+
+  canHandleMouseEvents() {
+    return false;
   }
 }
 
@@ -14,6 +20,10 @@ export class CPrimitive extends CNode {
   constructor(type) {
     super();
     this.type = type;
+  }
+
+  canHandleMouseEvents() {
+    return this.type === 'rect' || this.type === 'image';
   }
 
   toJSONDesc() {
@@ -33,6 +43,7 @@ export class CGroup extends CNode {
 
   insertFirst(node) {
     if (this.exists(node)) return;
+    node.parentNode = this;
     this._children.unshift(node);
   }
 
@@ -45,6 +56,7 @@ export class CGroup extends CNode {
       this._children.splice(refIndex + 1, 0, this._children.splice(index, 1)[0]);
     } else {
       // insert
+      node.parentNode = this;
       this._children.splice(refIndex + 1, 0, node);
     }
   }
@@ -52,6 +64,7 @@ export class CGroup extends CNode {
   ejectChild(node) {
     const index = this._children.indexOf(node);
     this._children.splice(index, 1);
+    node.parentNode = null;
   }
 
   toJSONDesc() {
@@ -85,6 +98,28 @@ export class CSurface extends CGroup {
     node.style.width = width + 'px';
     node.style.height = height + 'px';
     ctx.scale(scale, scale);
+  }
+
+  findNodesInPoint({x, y}) {
+    const childrenOrSelf = x => {
+      if (x._children) {
+        return x._children.map(childrenOrSelf).reduce((acc, y) => acc.concat(y), []);
+      }
+      return [x];
+    }
+
+    const inPoint = childrenOrSelf(this)
+      .filter(x => x._props.frame && x.canHandleMouseEvents())
+      .filter(_ => {
+        return isInRect({x, y}, _._props.frame);
+      });
+
+    return inPoint;
+  }
+
+  findHandlerForEvent(point, type) {
+    const nodes = this.findNodesInPoint(point).filter(x => x._props[type]);
+    return nodes.slice(-1)[0];
   }
 
   render() {

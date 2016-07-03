@@ -1,137 +1,34 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Canvas, CanvasRect, CanvasFilter, CanvasImage, CanvasText, CanvasOutline, CanvasLine} from './Canvas';
-import {getImage} from 'utils/imageCache';
-import {rectCenter, isInRect, pointDiff} from 'utils/pixels';
+import {Canvas, CanvasRect, CanvasFilter, CanvasText, CanvasImage, CanvasOutline, CanvasLine} from './Canvas';
+import {rectCenter, pointDiff} from 'utils/pixels';
 import Spinner from './Spinner';
 import TextBox from './TextBox';
+import computeDimensions from './computeImageDimensions';
+import loadImage from './loadImage';
 
 const makeBlue = (alpha) => `rgba(87, 205, 255, ${alpha})`;
 
-const SIZES = {
-  tall: [500, 750],
-  square: [500, 500],
-  wide: [500, 250]
-};
-
-const getMousePos = (e, canvas) => {
-  const rect = canvas.getBoundingClientRect();
-  const mousePos = {
-    x: e.clientX - rect.left,
-    y: e.clientY - rect.top
-  };
-  return mousePos;
-};
-
-export default React.createClass({
-  initSize(size) {
-    const obj = {};
-    [obj.canvasWidth, obj.canvasHeight] = SIZES[size];
-    const state = this.state;
-    if (state.canvasWidth === obj.canvasWidth && state.canvasHeight === obj.canvasHeight) {
-      return Promise.resolve();
-    } else {
-      return new Promise(resolve => {
-        this.setState(obj, resolve);
-      });
-    }
-  },
-
-  loadImage(url) {
-    if (!url) return Promise.resolve();
-    if (this.props.image !== url) this.setState({ image: null });
-    return getImage(url).then(img => {
-      this.setState({ image: img });
-    });
-  },
-
-  componentWillReceiveProps(nextProps) {
-    Promise.all([this.initSize(nextProps.size), this.loadImage(nextProps.image)]).then(() => {
-      this.redraw(nextProps);
-    });
-  },
-
-  getInitialState() {
-    return {};
-  },
-
-  componentWillMount() {
-    Promise.all([this.initSize(this.props.size), this.loadImage(this.props.image)]);
-  },
-
-  doRedraw() {
-    this.redraw(this.props);
-  },
-
-  redraw(nextProps) {
-    if (!nextProps) nextProps = this.props;
+const ImageCanvas = React.createClass({
+  redraw() {
     this.forceUpdate();
   },
 
   updateCursor(e) {
     this.refs.bodyBox.updateCursor(e);
-    setTimeout(this.doRedraw, 0);
+    setTimeout(this.redraw, 0);
   },
 
   setNoFocus() {
     this.props.onBlur();
   },
 
-  getClickRegions() {
-    const bodyRegions = this.refs.bodyBox.getClickRegions();
-
-    return Object.keys(bodyRegions).reduce((memo, key) => {
-      memo['body__' + key] = bodyRegions[key];
-      return memo;
-    }, {});
-  },
-
-  getMousePos(e) {
-    return getMousePos(e, ReactDOM.findDOMNode(this.refs.canvas));
-  },
-
-  findRegionUnderPos(mousePos) {
-    const clickRegions = this.getClickRegions();
-    return Object.keys(clickRegions).find(name => {
-      const rect = clickRegions[name];
-      if (!rect) return;
-      return isInRect(mousePos, rect);
-    });
-  },
-
-  handleMouseDown(e) {
-    const mousePos = this.getMousePos(e);
-    const pointedRegion = this.findRegionUnderPos(mousePos);
-
-    if (!pointedRegion) {
-      return this.setNoFocus();
-    }
-
-    const [area, sub] = pointedRegion.split('__');
-
-    this._mouseArea = area + 'Box';
-    this.refs[this._mouseArea].handleMouseDown(e, mousePos, sub);
-    setTimeout(this.doRedraw, 0);
-  },
-
-  handleMouseMove(e) {
-    const {_mouseArea} = this;
-    if (!_mouseArea) return;
-    const mousePos = this.getMousePos(e);
-    this.refs[_mouseArea].handleMouseMove(e, mousePos);
-    setTimeout(this.doRedraw, 0);
-  },
-
-  handleMouseUp(e) {
-    const {_mouseArea} = this;
-    if (!_mouseArea) return;
-    this.refs[_mouseArea].handleMouseUp(e);
-    this._mouseArea = null;
-    setTimeout(this.doRedraw, 0);
+  handleClickOnImage(e, mousePos) {
+    this.setNoFocus();
   },
 
   getGuidePoints() {
-    const {canvasWidth, canvasHeight} = this.state;
+    const {canvasWidth, canvasHeight} = this.props;
 
     const horizontal = [[0, canvasHeight / 2], [canvasWidth, canvasHeight / 2]];
     const vertical = [[canvasWidth / 2, 0], [canvasWidth / 2, canvasHeight]];
@@ -140,7 +37,7 @@ export default React.createClass({
   },
 
   closeToGuides(part) {
-    const {canvasWidth, canvasHeight} = this.state;
+    const {canvasWidth, canvasHeight} = this.props;
     const {isFocused} = this.props;
 
     if (!isFocused) return { horizontal: false, vertical: false };
@@ -158,15 +55,15 @@ export default React.createClass({
   },
 
   render() {
-    const img = this.state.image;
-    if (!img) {
+    if (!this.props.image) {
       return <div className="ImageCanvas">
         <Spinner />
       </div>;
     }
 
-    const {canvasWidth, canvasHeight} = this.state;
+    const {canvasWidth, canvasHeight} = this.props;
     const {filter, isFocused} = this.props;
+    const {image} = this.props;
     const {text} = this.props.body;
     const mainFrame = [0, 0, canvasWidth, canvasHeight];
 
@@ -178,13 +75,8 @@ export default React.createClass({
         ref="canvas"
         width={canvasWidth}
         height={canvasHeight}
-        onRedraw={this.props.onRedraw}
-        onMouseDown={this.handleMouseDown}
-        onMouseMove={this.handleMouseMove}
-        onMouseUp={this.handleMouseUp}>
-        {img ?
-          <CanvasImage image={img} frame={mainFrame} /> :
-          null}
+        onRedraw={this.props.onRedraw}>
+        <CanvasImage image={image} frame={mainFrame} onMouseDown={this.handleClickOnImage} />
         <CanvasFilter filter={filter} frame={mainFrame} />
         {showHorizontalGuide ?
           <CanvasLine color={makeBlue(0.85)} width={2} from={horizontalGuidePoints[0]} to={horizontalGuidePoints[1]} /> :
@@ -216,3 +108,5 @@ export default React.createClass({
     </div>
   }
 });
+
+export default computeDimensions(loadImage(ImageCanvas));

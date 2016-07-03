@@ -1,34 +1,32 @@
 import React from 'react';
 import {CanvasRect, CanvasFilter, CanvasImage, CanvasText, CanvasOutline, CanvasLine, CanvasGroup} from './Canvas';
+import Snap from './TextBoxSnap';
+import Cursor from './TextBoxCursor';
 import TextEditor from 'utils/textEditor';
 import {findIdxForCursor, findPosForCursor, findCoordsForPos, findRectsForSelection} from 'utils/text';
 import {keys} from 'utils/keyboard';
-import {rectCenter, moveRect, shrinkRect} from 'utils/pixels';
+import {rectCenter, moveRect} from 'utils/pixels';
 
 const _ctx = document.createElement('canvas').getContext('2d');
-
-const MIN_TEXT_WIDTH = 100;
 
 const makeBlue = (alpha) => `rgba(87, 205, 255, ${alpha})`;
 
 export default React.createClass({
+  propTypes: {
+    text: React.PropTypes.string.isRequired,
+    textAttrs: React.PropTypes.object.isRequired,
+    textRect: React.PropTypes.array.isRequired,
+    focusedPart: React.PropTypes.oneOfType([React.PropTypes.string, React.PropTypes.bool]).isRequired,
+    isEditing: React.PropTypes.bool.isRequired,
+    part: React.PropTypes.string.isRequired,
+    cancelEditing: React.PropTypes.func.isRequired,
+    setFocus: React.PropTypes.func.isRequired,
+    moveRect: React.PropTypes.func.isRequired
+  },
+
   getInitialState() {
     this.textEditor = new TextEditor();
     return {};
-  },
-
-  componentDidMount() {
-    this._cursorInterval = setInterval(() => {
-      const {isEditing} = this.getFocusState();
-      if (isEditing) {
-        this.textEditor.toggleCursor();
-        window.requestAnimationFrame(() => this.forceUpdate());
-      }
-    }, 450);
-  },
-
-  componentWillUnmount() {
-    clearInterval(this._cursorInterval);
   },
 
   getSnapFrames() {
@@ -40,18 +38,6 @@ export default React.createClass({
     const right = [x + w - size/2, yCenter - size/2, size, size];
 
     return {left, right};
-  },
-
-  getClickRegions() {
-    const {textRect} = this.props;
-
-    const {left, right} = this.getSnapFrames();
-
-    return {
-      leftSnap: left,
-      rightSnap: right,
-      rect: textRect
-    };
   },
 
   getSelectionRects() {
@@ -74,10 +60,10 @@ export default React.createClass({
 
   getCursorCoords(selRects = []) {
     const {textRect, textAttrs, text} = this.props;
-    const {cursor, showCursor} = this.textEditor;
+    const {cursor} = this.textEditor;
     const {isEditing} = this.getFocusState();
 
-    if (isEditing && showCursor && selRects.length === 0) {
+    if (isEditing && selRects.length === 0) {
       const pos = findPosForCursor(_ctx, cursor, textRect, textAttrs, text);
       if (pos) {
         return findCoordsForPos(_ctx, textRect, textAttrs, text, pos);
@@ -112,19 +98,11 @@ export default React.createClass({
   handleMouseDown(e, mousePos, sub) {
     this.startPos = mousePos;
 
-    if (sub === 'rect') {
-      this.mouseHeld = true;
-      if (this.getFocusState().isFocused) {
-        this.mouseDown = new Date;
-      }
-      this.props.setFocus();
-    } else if (sub === 'leftSnap') {
-      this.mouseHeld = true;
-      this.snap = 'left';
-    } else if (sub === 'rightSnap') {
-      this.mouseHeld = true;
-      this.snap = 'right';
+    this.mouseHeld = true;
+    if (this.getFocusState().isFocused) {
+      this.mouseDown = new Date;
     }
+    this.props.setFocus();
   },
 
   handleMouseMove(e, mousePos) {
@@ -144,13 +122,6 @@ export default React.createClass({
       const newRect = moveRect(textRect, mouseDiff);
       this.props.moveRect(newRect);
       this.startPos = mousePos;
-    } else if (this.snap) {
-      // resize text
-      const rect = this.props.textRect;
-      const newRect = shrinkRect(rect, this.snap, mouseDiff.x);
-      if (newRect[2] <= MIN_TEXT_WIDTH) return;
-      this.props.moveRect(newRect);
-      this.startPos = mousePos;
     } else if (isFocused && isEditing) {
       //select text
       const cursor1 = startPos;
@@ -164,7 +135,7 @@ export default React.createClass({
   },
 
   handleMouseUp(e) {
-    if (this.mouseDown && (new Date - this.mouseDown) < 200 && !this.snap) {
+    if (this.mouseDown && (new Date - this.mouseDown) < 200) {
       const {startPos} = this;
       const {text, textAttrs, textRect} = this.props;
       const cursor = findIdxForCursor(_ctx, textRect, startPos, textAttrs, text);
@@ -175,7 +146,6 @@ export default React.createClass({
 
     this.mouseDown = null;
     this.mouseHeld = false;
-    this.snap = null;
   },
 
   render() {
@@ -192,21 +162,27 @@ export default React.createClass({
     const cursorCoords = this.getCursorCoords(selectionRects);
     const outlineColor = mouseHeld ? makeBlue(0.5) : '#0092d1';
 
-    const updateTextRect = newRect => {
-      this.props.moveRect(newRect);
-    };
-
+    // invisible rect to allow text selection/dragging
     return <CanvasGroup>
-      {textRect && isFocused ? <CanvasRect frame={leftSnapFrame} fill={outlineColor} /> : null}
-      {textRect && isFocused ? <CanvasRect frame={rightSnapFrame} fill={outlineColor} /> : null}
-      {textRect ?
-        <CanvasText text={text} frame={textRect} textAttrs={textAttrs} onUpdateRect={updateTextRect} /> :
+      <CanvasRect
+        frame={textRect}
+        fill="rgba(0,0,0,0)"
+        mouseSnap={true}
+        onMouseDown={this.handleMouseDown}
+        onMouseMove={this.handleMouseMove}
+        onMouseUp={this.handleMouseUp} />
+      {isFocused ?
+        <Snap frame={leftSnapFrame} textRect={textRect} color={outlineColor} direction="left" onMove={this.props.moveRect} /> :
         null}
-      {textRect && isFocused ?
+      {isFocused ?
+        <Snap frame={rightSnapFrame} textRect={textRect} color={outlineColor} direction="right" onMove={this.props.moveRect} /> :
+        null}
+      <CanvasText text={text} frame={textRect} textAttrs={textAttrs} onUpdateRect={this.props.moveRect} />
+      {isFocused ?
         <CanvasOutline width={2} frame={textRect} color={outlineColor} /> :
         null}
       {cursorCoords && isEditing ?
-        <CanvasLine color="rgba(255, 255, 255, 0.75)" width={1} from={[cursorCoords.x, cursorCoords.y1]} to={[cursorCoords.x, cursorCoords.y2]} /> :
+        <Cursor coords={cursorCoords} /> :
         null}
       {isEditing ? selectionRects : null}
     </CanvasGroup>;

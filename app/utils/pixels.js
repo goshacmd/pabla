@@ -47,3 +47,12 @@ export const centerCrop = (area, frame) => {
 
   return {xPad, yPad, zoneWidth, zoneHeight};
 };
+
+export const getMousePos = (e, canvas) => {
+  const rect = canvas.getBoundingClientRect();
+  const mousePos = {
+    x: e.clientX - rect.left,
+    y: e.clientY - rect.top
+  };
+  return mousePos;
+};
