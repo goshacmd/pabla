@@ -31,6 +31,11 @@ const ImageCanvas = React.createClass({
     setTimeout(this.redraw, 0);
   },
 
+  cancelEdit(e) {
+    this.refs.bodyBox.cancelEdit(e);
+    setTimeout(this.redraw, 0);
+  },
+
   setNoFocus() {
     this.props.onBlur();
   },
@@ -112,7 +117,8 @@ const ImageCanvas = React.createClass({
         ref="txt"
         value={text}
         onChange={e => this.props.onTextChange(e.target.value)}
-        onKeyUp={this.updateCursor}
+        onSelect={this.updateCursor}
+        onKeyUp={this.cancelEdit}
         style={{height: 1, width: 1, opacity: 0}} />
     </div>
   }

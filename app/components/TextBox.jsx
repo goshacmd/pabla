@@ -101,15 +101,17 @@ export default React.createClass({
   },
 
   updateCursor(e) {
-    if (keys[e.which] === 'escape') {
-      this.props.cancelEditing();
-      e.target.blur();
-    }
-
     const txt = this.getLinkedArea();
     const {selectionStart, selectionEnd} = txt;
 
     this.setSelection(selectionStart, selectionEnd);
+  },
+
+  cancelEdit(e) {
+    if (keys[e.which] === 'escape') {
+      this.props.cancelEditing();
+      e.target.blur();
+    }
   },
 
   handleMouseDown(e, mousePos, sub) {
