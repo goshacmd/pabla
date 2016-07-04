@@ -2,7 +2,6 @@ import React from 'react';
 import {CanvasRect, CanvasFilter, CanvasImage, CanvasText, CanvasOutline, CanvasLine, CanvasGroup} from './Canvas';
 import Snap from './TextBoxSnap';
 import Cursor from './TextBoxCursor';
-import TextEditor from 'utils/textEditor';
 import {findIdxForCursor, findPosForCursor, findCoordsForPos, findRectsForSelection} from 'utils/text';
 import {keys} from 'utils/keyboard';
 import {rectCenter, moveRect} from 'utils/pixels';
@@ -24,26 +23,8 @@ export default React.createClass({
     moveRect: React.PropTypes.func.isRequired
   },
 
-  getInitialState() {
-    this.textEditor = new TextEditor();
-    return {};
-  },
-
   getCursors() {
-    const {cursor, cursor1, cursor2} = this.textEditor;
-    return {cursor, cursor1, cursor2};
-  },
-
-  setSelection(start, end) {
-    this.textEditor.setFromInput(start, end);
-  },
-
-  setAreaSelection(start, end) {
-    this.textEditor.setSelection(start, end, this.getLinkedArea());
-  },
-
-  setCursor(pos) {
-    this.textEditor.setCursor(pos, this.getLinkedArea());
+    return this.props.selection;
   },
 
   getSnapFrames() {
@@ -96,17 +77,6 @@ export default React.createClass({
     };
   },
 
-  getLinkedArea() {
-    return this.props.getArea();
-  },
-
-  updateCursor(e) {
-    const txt = this.getLinkedArea();
-    const {selectionStart, selectionEnd} = txt;
-
-    this.setSelection(selectionStart, selectionEnd);
-  },
-
   cancelEdit(e) {
     if (keys[e.which] === 'escape') {
       this.props.cancelEditing();
@@ -149,7 +119,7 @@ export default React.createClass({
       const {textRect, textAttrs, text} = this.props;
       let idx1 = findIdxForCursor(_ctx, textRect, cursor1, textAttrs, text);
       let idx2 = findIdxForCursor(_ctx, textRect, cursor2, textAttrs, text);
-      this.setAreaSelection(idx1, idx2);
+      this.props.onAreaSelection(idx1, idx2 + 1);
     }
   },
 
@@ -158,9 +128,9 @@ export default React.createClass({
       const {startPos} = this;
       const {text, textAttrs, textRect} = this.props;
       const cursor = findIdxForCursor(_ctx, textRect, startPos, textAttrs, text);
-      this.setCursor(cursor);
+      this.props.onSetCursor(cursor);
       this.props.setEditing();
-      this.getLinkedArea().focus();
+      this.props.onEditEnter();
     }
 
     this.mouseDown = null;

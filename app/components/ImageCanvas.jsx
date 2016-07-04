@@ -7,6 +7,8 @@ import TextBox from './TextBox';
 import computeDimensions from './computeImageDimensions';
 import loadImage from './loadImage';
 
+import textEditor from 'utils/textEditor';
+
 const makeBlue = (alpha) => `rgba(87, 205, 255, ${alpha})`;
 
 const FILTERS = {
@@ -16,18 +18,72 @@ const FILTERS = {
   heavy_blur: ['blur', 40]
 };
 
+// TODO: make this work & use this
+const ControlledTextarea = React.createClass({
+  componentDidMount() {
+    const txt = ReactDOM.findDOMNode(this);
+    const [start, end] = this.props.selection;
+    txt.setSelectionRange(start, end);
+  },
+
+  componentWillReceiveProps(nextProps) {
+    const txt = ReactDOM.findDOMNode(this);
+    const [start, end] = nextProps.selection;
+    txt.setSelectionRange(start, end);
+  },
+
+  handleSelect(e) {
+    const {selectionStart, selectionEnd} = e.target;
+    if (this._focusing !== true) {
+      this.props.onSelect(selectionStart, selectionEnd);
+    }
+    this.select();
+    this._focusing = false;
+    e.preventDefault();
+    e.stopPropagation();
+  },
+
+  select(e) {
+    this._focusing = true;
+    const txt = ReactDOM.findDOMNode(this);
+    const [start, end] = this.props.selection;
+    txt.setSelectionRange(start, end);
+  },
+
+  render() {
+    const {selection, onSelect, ...rest} = this.props;
+    return <textarea onSelect={this.handleSelect} onFocus={this.select} {...rest} />;
+  }
+});
+
 const Filter = ({ name: humanName, frame }) => {
   const [name, value] = FILTERS[humanName];
   return <CanvasFilter filter={name} value={value} frame={frame} />;
 };
 
 const ImageCanvas = React.createClass({
+  getInitialState() {
+    this.textEditor = new textEditor();
+    return { selection: [null, null] };
+  },
+
+  getCursors() {
+    const {start, end} = this.textEditor;
+    if (start === end) {
+      return {cursor: start, cursor1: null, cursor2: null};
+    } else {
+      return {cursor: null, cursor1: start, cursor2: end};
+    }
+  },
+
   redraw() {
     this.forceUpdate();
   },
 
   updateCursor(e) {
-    this.refs.bodyBox.updateCursor(e);
+    const {txt} = this.refs;
+    const {selectionStart, selectionEnd} = txt;
+    this.textEditor.setFromInput(selectionStart, selectionEnd);
     setTimeout(this.redraw, 0);
   },
 
@@ -108,7 +164,10 @@ const ImageCanvas = React.createClass({
           textRect={this.props.body.textRect}
           textAttrs={this.props.body.textAttrs}
           text={this.props.body.text}
-          getArea={() => this.refs.txt}
+          selection={this.getCursors()}
+          onAreaSelection={(start, end) => { this.textEditor.setSelection(start, end, this.refs.txt); this.forceUpdate(); }}
+          onSetCursor={(pos) => { this.textEditor.setCursor(pos, this.refs.txt); this.forceUpdate(); }}
+          onEditEnter={() => this.refs.txt.focus()}
           focusedPart={this.props.isFocused}
           isEditing={this.props.isEditing} />
       </Canvas>
