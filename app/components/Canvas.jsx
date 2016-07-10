@@ -75,7 +75,7 @@ const ContainerMixin = Object.assign({}, ReactMultiChild.Mixin, {
       if (this._renderedChildren.hasOwnProperty(key)) {
         const child = this._renderedChildren[key];
         child._mountImage = mountedImages[i];
-        //mountedImages[i].inject(this.node);
+        injectAfter(this.node, mountedImages[i - 1], mountedImages[i]);
         i++;
       }
     }
@@ -105,6 +105,9 @@ const Surface = React.createClass({
       ReactInstanceMap.get(this)._context
     );
     ReactUpdates.ReactReconcileTransaction.release(transaction);
+
+    this.node.render();
+    this.passRendered();
     } catch(e) { console.error(e); }
   },
 
