@@ -1,5 +1,3 @@
-import {getPopularImages, searchImages as _searchImages} from 'utils/unsplash';
-
 export const setFont = (font) => ({
   type: 'SET_FONT',
   font
@@ -77,28 +75,11 @@ export const setQuery = (query) => ({
   query
 });
 
+export const searchImages = (query) => ({
+  type: 'SEARCH_IMAGES',
+  query
+});
 
-export const initialFetchImages = () => {
-  return dispatch => {
-    getPopularImages().then(images => {
-      dispatch({ type: 'RECEIVE_IMAGES', images });
-      dispatch(selectImage(images[0]));
-    });
-  };
-};
-
-export const searchImages = (query) => {
-  return dispatch => {
-    _searchImages(query).then(images => {
-      dispatch({ type: 'RECEIVE_IMAGES', images });
-    });
-  };
-};
-
-export const resetSearch = () => {
-  return dispatch => {
-    getPopularImages().then(images => {
-      dispatch({ type: 'RECEIVE_IMAGES', images });
-    });
-  };
-};
+export const resetSearch = () => ({
+  type: 'RESET_SEARCH'
+});

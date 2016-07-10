@@ -1,21 +1,29 @@
-require('es6-promise').polyfill();
+import * as promisePolyfill from 'es6-promise';
+promisePolyfill.polyfill();
+
+import 'babel-polyfill';
 
 import 'styles/application.scss';
 
 import ReactDOM from 'react-dom';
 import React from 'react';
 import {createStore, applyMiddleware} from 'redux';
-import thunkMiddleware from 'redux-thunk';
+import createSagaMiddleware from 'redux-saga';
 import {Provider} from 'react-redux';
 
 import reducer from 'reducer';
 import App from 'container/App';
 
-import {initialFetchImages} from 'actions';
+import rootSaga from 'sagas';
 
-const store = createStore(reducer, applyMiddleware(thunkMiddleware));
+const sagaMiddleware = createSagaMiddleware();
 
-store.dispatch(initialFetchImages());
+const store = createStore(
+  reducer,
+  applyMiddleware(sagaMiddleware)
+);
+
+sagaMiddleware.run(rootSaga);
 
 document.addEventListener('DOMContentLoaded', () => {
   const el = document.createElement('div');
