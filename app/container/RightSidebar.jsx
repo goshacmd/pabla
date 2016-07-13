@@ -28,6 +28,7 @@ const RightSidebar = ({ drawing, filter, onFilterChange, textAttrs, onFontChange
     <DownloadButton drawing={drawing} />
     <p className="Credit">
       Made by <a href="http://goshakkk.name">Gosha Arinich</a>. <a href="https://github.com/goshakkk/pabla">Repo</a>.
+      Learn about rendering to canvas with React <a href="http://goshakkk.name/react-custom-renderers/">here</a>.
     </p>
   </div>;
 };
