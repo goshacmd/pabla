@@ -119,7 +119,7 @@ export default React.createClass({
       const {textRect, textAttrs, text} = this.props;
       let idx1 = findIdxForCursor(_ctx, textRect, cursor1, textAttrs, text);
       let idx2 = findIdxForCursor(_ctx, textRect, cursor2, textAttrs, text);
-      this.props.onAreaSelection(idx1, idx2 + 1);
+      this.props.onAreaSelection(idx1, idx2);
     }
   },
 

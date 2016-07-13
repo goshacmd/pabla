@@ -72,7 +72,7 @@ const ImageCanvas = React.createClass({
     if (start === end) {
       return {cursor: start, cursor1: null, cursor2: null};
     } else {
-      return {cursor: null, cursor1: start, cursor2: end};
+      return {cursor: null, cursor1: start + 1, cursor2: end + 1};
     }
   },
 
