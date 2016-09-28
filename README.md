@@ -12,3 +12,7 @@ If you are interested in how I made it work, I have [a blog post](http://goshakk
 ### License
 
 Copyright 2016 Gosha Arinich.
+
+All rights reserved.
+
+Commercial and other use is not permitted, the source code is for educational purposes only.
